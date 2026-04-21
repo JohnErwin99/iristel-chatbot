@@ -21,6 +21,9 @@ app.use(express.static(path.join(__dirname)));
 const GROQ_API_KEY = process.env.GROQ_API_KEY || "";
 const GROQ_MODEL = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
 const GROQ_BASE = "https://api.groq.com/openai/v1/chat/completions";
+const OLLAMA_BASE = process.env.OLLAMA_BASE || "http://localhost:11434";
+const OLLAMA_MODEL = process.env.OLLAMA_MODEL || "llama3.2:1b";
+const USE_GROQ = !!GROQ_API_KEY;
 const PORT = process.env.PORT || 3000;
 
 // ── Mount feature microservices ──
