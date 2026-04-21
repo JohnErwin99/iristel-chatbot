@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Unified Communications Service Selector</title>
+  <style>
+    *{box-sizing:border-box;}
+    body{margin:0;padding:20px;font-family:system-ui,-apple-system,sans-serif;background:#f3f4f6;color:#111;}
+    .wrap{max-width:620px;margin:1.5rem auto;}
+    .card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:1.75rem;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+
+    /* Progress */
+    .progress{display:flex;gap:5px;margin-bottom:1.5rem;}
+    .pip{flex:1;height:3px;border-radius:2px;background:#e5e7eb;transition:background .25s;}
+    .pip.done{background:#111;}
+
+    /* Steps */
+    .step{display:none;} .step.active{display:block;}
+    .step-label{font-size:11px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:.06em;margin:0 0 4px;}
+    .step-title{font-size:18px;font-weight:600;color:#111;margin:0 0 4px;}
+    .step-sub{font-size:13px;color:#666;margin:0 0 1.25rem;}
+
+    /* Options — checkbox / radio cards */
+    .opt-grid{display:flex;flex-direction:column;gap:8px;margin-bottom:1.25rem;}
+    .opt{border:1.5px solid #e5e7eb;border-radius:9px;padding:11px 14px;cursor:pointer;transition:all .12s;display:flex;align-items:center;gap:10px;background:#fafafa;}
+    .opt:hover{border-color:#bbb;}
+    .opt.selected{border-color:#111;background:#fff;}
+    .opt-check{width:18px;height:18px;border-radius:4px;border:1.5px solid #ccc;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .12s;font-size:11px;color:transparent;}
+    .opt.selected .opt-check{background:#111;border-color:#111;color:#fff;}
+    .opt-radio .opt-check{border-radius:50%;}
+    .opt-text{font-size:14px;color:#222;}
+
+    /* Product cards */
+    .prod-grid{display:flex;flex-direction:column;gap:10px;margin-bottom:1rem;}
+    .prod{border:2px solid #e5e7eb;border-radius:10px;padding:14px 16px;cursor:pointer;transition:all .15s;background:#fafafa;position:relative;}
+    .prod:hover{border-color:#aaa;}
+    .prod.selected{border-color:#111;background:#fff;}
+    .prod.selected::after{content:"✓";position:absolute;top:12px;right:14px;width:22px;height:22px;background:#111;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;}
+    .prod-name{font-size:14px;font-weight:600;color:#111;margin:0 0 2px;}
+    .prod-price{font-size:13px;color:#555;margin:0 0 4px;}
+    .prod-desc{font-size:12px;color:#777;margin:0;line-height:1.5;}
+    .prod-tag{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:5px;margin-right:4px;margin-bottom:4px;}
+    .tag-msg{background:#DBEAFE;color:#1E40AF;}
+    .tag-voice{background:#FEE2E2;color:#991B1B;}
+    .tag-hybrid{background:#F3E8FF;color:#6B21A8;}
+    .tag-cc{background:#DBEAFE;color:#1E40AF;}
+    .tag-sc{background:#D1FAE5;color:#065F46;}
+    .tag-pbx{background:#FEF3C7;color:#92400E;}
+
+    /* Result card */
+    .result-box{border-radius:10px;padding:16px;margin-bottom:1.25rem;}
+    .result-msg{background:#EFF6FF;border:1px solid #BFDBFE;}
+    .result-voice{background:#FEF2F2;border:1px solid #FECACA;}
+    .result-hybrid{background:#F5F3FF;border:1px solid #DDD6FE;}
+    .result-title{font-size:16px;font-weight:600;margin:0 0 6px;}
+    .result-summary{font-size:13px;color:#555;margin:0 0 10px;}
+    .result-bullets{font-size:13px;color:#444;margin:0;padding-left:18px;line-height:1.7;}
+
+    /* Form */
+    .field{margin-bottom:1rem;}
+    .label{display:block;font-size:13px;color:#555;margin-bottom:6px;}
+    input[type="text"],input[type="email"],input[type="number"],select{
+      width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:14px;background:#fff;color:#111;outline:none;
+    }
+    input:focus,select:focus{border-color:#888;}
+    .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+    /* Buttons */
+    .btn-row{display:flex;gap:8px;margin-top:.5rem;}
+    .btn{padding:10px 18px;font-size:14px;font-weight:500;cursor:pointer;border-radius:8px;border:1px solid #ccc;background:#fff;color:#111;transition:background .15s;}
+    .btn:hover{background:#f5f5f5;}
+    .btn:disabled{opacity:.45;cursor:not-allowed;}
+    .btn-primary{background:#3e8ccb;color:#fff;border-color:transparent;flex:1;}
+    .btn-primary:hover{background:#333;}
+    .btn-back{width:auto;}
+
+    /* Status */
+    .status{font-size:13px;padding:10px 14px;border-radius:8px;margin-top:1rem;display:none;}
+    .status.success{background:#f0fdf4;color:#166534;display:block;}
+    .status.error{background:#fef2f2;color:#991b1b;display:block;}
+    .status.loading{background:#f5f5f5;color:#555;display:block;}
+
+    /* Item log */
+    .ilog{margin-top:10px;}
+    .ilog-row{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:13px;border-bottom:1px solid #f0f0f0;}
+    .ilog-row:last-child{border-bottom:none;}
+    .idot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+    .idot.pending{background:#ddd;} .idot.ok{background:#1D9E75;} .idot.fail{background:#EF4444;}
+
+    .divider{border:none;border-top:1px solid #eee;margin:1.25rem 0;}
+
+    /* Intro */
+    .intro-icon{font-size:32px;margin-bottom:8px;}
+  </style>
+  <script>
+    // ════════════════════════════════════════
+    // CONFIG
+    // ════════════════════════════════════════
+    const API_KEY     = "wSSeJNpsvBZlcApNhvlIHJmjdVvHq9VDbl5wf5RB";
+    const NQ_BASE     = "https://api.niftyquoter.com/api/v1";
+    const ACC_EMAIL   = "jerwin@iristel.com";
+    const TEAM_NOTIFY = ["jayoub@iristel.com", "tkhei@iristel.com"];
+
+    // Content template ID per product group (used when creating proposals)
+    const TEMPLATE_MAP = {
+      cloud_contact:  26329,
+      smart_connect:  49704,
+      hosted_pbx:     45027
+    };
+
+    function authQS() {
+      return "key=" + encodeURIComponent(API_KEY) + "&email=" + encodeURIComponent(ACC_EMAIL);
+    }
+
+    // Pick content template based on which product group has the most selections
+    function pickTemplateId() {
+      const counts = {};
+      selectedProducts.forEach(pid => {
+        const g = PRODUCTS[pid].group;
+        counts[g] = (counts[g] || 0) + 1;
+      });
+      let best = "smart_connect";
+      let max = 0;
+      for (const g in counts) { if (counts[g] > max) { max = counts[g]; best = g; } }
+      return TEMPLATE_MAP[best] || TEMPLATE_MAP.smart_connect;
+    }
+
+    // ════════════════════════════════════════
+    // PRODUCT CATALOG
+    // ════════════════════════════════════════
+    const PRODUCTS = {
+      // ── Cloud Contact (pricing template 55883) ──
+      cc_core_voice: {
+        name: "Cloud Contact - Core Voice",
+        description: "Manage all Inbound, Outbound, and Blended campaigns",
+        price: "80", period: "monthly", group: "cloud_contact",
+        tags: ["cc"], label: "Core Voice — $80/user/mo"
+      },
+      cc_omni_channel: {
+        name: "Cloud Contact - Omni Channel",
+        description: "Manage all interactions across every channel with the Unified Inbox",
+        price: "110", period: "monthly", group: "cloud_contact",
+        tags: ["cc"], label: "Omni Channel — $110/user/mo"
+      },
+      cc_setup_fee: {
+        name: "Cloud Contact Set Up Fee",
+        description: "One-time setup, configuration, implementation, and training",
+        price: "4000", period: "one-time", group: "cloud_contact",
+        tags: ["cc"], label: "Set Up Fee — $4,000 one-time"
+      },
+      cc_recording_ai: {
+        name: "Cloud Contact Call Recording AI",
+        description: "AI-powered call recording and analysis",
+        price: "7", period: "monthly", group: "cloud_contact",
+        tags: ["cc"], label: "Call Recording AI — $7/user/mo"
+      },
+      cc_custom_dev: {
+        name: "Custom Development (per hour)",
+        description: "Custom development and integration work",
+        price: "200", period: "one-time", group: "cloud_contact",
+        tags: ["cc"], label: "Custom Dev — $200/hr"
+      },
+
+      // ── Smart Connect Bundles (pricing template 57268) ──
+      sc_essentials_new: {
+        name: "Essentials Smart Connect Bundle New!",
+        description: "Cloud Calling\nWebex Basic\nStandard Call Recording\nVirtual Fax\nEset Cybersecurity Training (1 year)\nSmarter Messaging Entry",
+        price: "25", period: "monthly", group: "smart_connect",
+        tags: ["sc"], label: "Essentials New — $25/user/mo"
+      },
+      sc_pro_new: {
+        name: "Pro Smart Connect Bundle New!",
+        description: "Cloud Calling\nStandard Webex\nUnified Capture Call Recording\nVirtual Fax\nEset Cybersecurity Protect Advanced (1 year)\nSmarter Messaging Growth",
+        price: "45", period: "monthly", group: "smart_connect",
+        tags: ["sc"], label: "Pro New — $45/user/mo"
+      },
+      sc_premium_new: {
+        name: "Premium Smart Connect Bundle New!",
+        description: "Cloud Calling\nStandard Webex\nInsights & AI Call Recording\nVirtual Fax\nEset Cybersecurity Protect Advanced + Cybersecurity training (1 year)\nSmarter Messaging Ultimate",
+        price: "75", period: "monthly", group: "smart_connect",
+        tags: ["sc"], label: "Premium New — $75/user/mo"
+      },
+      sc_essentials: {
+        name: "Essentials Smart Connect Bundle",
+        description: "Cloud Calling\nStandard Webex or Teams Calling\nStandard Call Recording\nVirtual Fax ($.05/page)\nEset Cybersecurity Training (1 year)\nIP Vulnerability Scan\nSMS enabled # (Pay Per Use $0.03/msg)",
+        price: "23", period: "monthly", group: "smart_connect",
+        tags: ["sc"], label: "Essentials — $23/user/mo"
+      },
+      sc_pro: {
+        name: "Pro Smart Connect Bundle",
+        description: "Cloud Calling\nStandard Webex or Teams Calling\nUnified Capture Call Recording\nVirtual Fax 50 pages\nEset Cybersecurity Training (1 year)\nSMS enabled # (100 outgoing msgs)\nIP Vulnerability Scan",
+        price: "33", period: "monthly", group: "smart_connect",
+        tags: ["sc"], label: "Pro — $33/user/mo"
+      },
+      sc_premium: {
+        name: "Premium Smart Connect Bundle",
+        description: "Cloud Calling\nStandard Webex or Teams Calling\nInsights & AI Call Recording\nVirtual Fax 200 pages\nEset Cybersecurity Training (1 year)\nSMS enabled # (300 outgoing msgs)\nIP Vulnerability Scan",
+        price: "63", period: "monthly", group: "smart_connect",
+        tags: ["sc"], label: "Premium — $63/user/mo"
+      },
+
+      // ── Hosted PBX & Webex (pricing template 49261) ──
+      pbx_unite: {
+        name: "Iristel Unite",
+        description: "Cloud Voice, Unlimited Canada & US Calling, DID, Auto Attendant (5 users+) & Busy Lamp Fields",
+        price: "20", period: "monthly", group: "hosted_pbx",
+        tags: ["pbx"], label: "Iristel Unite — $20/user/mo"
+      },
+      pbx_webex_basic: {
+        name: "Iristel Unite with Webex Basic",
+        description: "Cloud Voice + Webex — Softphone, Messaging, File Sharing and more",
+        price: "24", period: "monthly", group: "hosted_pbx",
+        tags: ["pbx"], label: "Unite + Webex Basic — $24/user/mo"
+      },
+      pbx_webex_standard: {
+        name: "Iristel Unite with Webex Standard",
+        description: "Cloud Voice + Webex — Softphone, Messaging, File Sharing, Personal Meeting Room (25 capacity) and more",
+        price: "29", period: "monthly", group: "hosted_pbx",
+        tags: ["pbx"], label: "Unite + Webex Standard — $29/user/mo"
+      },
+      pbx_webex_premium: {
+        name: "Iristel Unite with Webex Premium",
+        description: "Cloud Voice + Webex — Softphone, Messaging, File Sharing, Personal Meeting Room (1000 capacity) and more",
+        price: "46", period: "monthly", group: "hosted_pbx",
+        tags: ["pbx"], label: "Unite + Webex Premium — $46/user/mo"
+      },
+      pbx_common_area: {
+        name: "Common Area Extension",
+        description: "Shared extension for common areas",
+        price: "10", period: "monthly", group: "hosted_pbx",
+        tags: ["pbx"], label: "Common Area Ext — $10/mo"
+      },
+      pbx_auto_attendant: {
+        name: "Auto-Attendant",
+        description: "Automated call routing and greeting",
+        price: "30", period: "monthly", group: "hosted_pbx",
+        tags: ["pbx"], label: "Auto-Attendant — $30/mo"
+      },
+      pbx_user_activation: {
+        name: "User Activation Fee",
+        description: "One-time user activation fee",
+        price: "25", period: "one-time", group: "hosted_pbx",
+        tags: ["pbx"], label: "User Activation — $25 one-time"
+      },
+      pbx_aa_activation: {
+        name: "Auto-Attendant Activation Fee",
+        description: "One-time auto-attendant activation fee",
+        price: "50", period: "one-time", group: "hosted_pbx",
+        tags: ["pbx"], label: "AA Activation — $50 one-time"
+      },
+      pbx_call_queue_basic: {
+        name: "Call Queue Basic (per agent)",
+        description: "Simple call distribution and queuing for a small work group. Inbound calls distributed based on agent line state.",
+        price: "10", period: "monthly", group: "hosted_pbx",
+        tags: ["pbx"], label: "Call Queue Basic — $10/agent/mo"
+      },
+      pbx_call_queue_premium: {
+        name: "Call Queue Premium (per agent)",
+        description: "Advanced routing and call management for formal call center environments. Supports ACD states, disposition codes, and outbound calling.",
+        price: "20", period: "monthly", group: "hosted_pbx",
+        tags: ["pbx"], label: "Call Queue Premium — $20/agent/mo"
+      },
+      pbx_virtual_fwd: {
+        name: "Virtual Number with Call Forwarding",
+        description: "Virtual DID number with call forwarding",
+        price: "10", period: "monthly", group: "hosted_pbx",
+        tags: ["pbx"], label: "Virtual # + Forwarding — $10/mo"
+      },
+      pbx_virtual_vm: {
+        name: "Virtual Number with VoiceMail",
+        description: "Virtual DID number with voicemail",
+        price: "15", period: "monthly", group: "hosted_pbx",
+        tags: ["pbx"], label: "Virtual # + VoiceMail — $15/mo"
+      },
+      pbx_hunt_group: {
+        name: "Hunt Group",
+        description: "Hunt group for call distribution",
+        price: "5", period: "monthly", group: "hosted_pbx",
+        tags: ["pbx"], label: "Hunt Group — $5/mo"
+      },
+      pbx_sms_webex: {
+        name: "SMS For Webex",
+        description: "3500 ingoing and outgoing SMS in Canada & US",
+        price: "7", period: "monthly", group: "hosted_pbx",
+        tags: ["pbx"], label: "SMS for Webex — $7/mo"
+      },
+      pbx_key_system: {
+        name: "Key System User",
+        description: "Key system user extension",
+        price: "10", period: "monthly", group: "hosted_pbx",
+        tags: ["pbx"], label: "Key System User — $10/mo"
+      },
+      pbx_cloud_connect: {
+        name: "Cloud Connect For Webex Calling",
+        description: "Direct, secure PSTN connectivity for Webex Calling — powered by Iristel's global voice network. Simple, scalable, and fully certified.",
+        price: "10", period: "monthly", group: "hosted_pbx",
+        tags: ["pbx"], label: "Cloud Connect for Webex — $10/mo"
+      }
+    };
+
+    // ════════════════════════════════════════
+    // RESULTS DEFINITIONS
+    // ════════════════════════════════════════
+    const ALL_PRODUCTS = Object.keys(PRODUCTS);
+    const RESULTS = {
+      msg: {
+        cls: "result-msg",
+        title: "Your Use Case Aligns with Unified Messaging",
+        summary: "Your responses indicate a messaging-driven environment. Choose from Smart Connect bundles with integrated messaging, or Cloud Contact's omni-channel solution.",
+        bullets: ["Omni-channel unified inbox","Bundled messaging + voice","Scalable contact center operations"],
+        products: ALL_PRODUCTS
+      },
+      voice: {
+        cls: "result-voice",
+        title: "Your Use Case Aligns with Unified Voice",
+        summary: "Your responses indicate real-time voice services where call quality, routing efficiency, and reliability are mission-critical.",
+        bullets: ["Cloud calling & Hosted PBX","Smart Connect all-in-one bundles","Contact center voice campaigns"],
+        products: ALL_PRODUCTS
+      },
+      hybrid: {
+        cls: "result-hybrid",
+        title: "Your Use Case Requires Both Voice and Messaging",
+        summary: "Your responses indicate a platform that benefits from combining voice, messaging, and collaboration within a unified communications infrastructure.",
+        bullets: ["Voice + messaging bundles","Hosted PBX with Webex collaboration","Cloud Contact omni-channel"],
+        products: ALL_PRODUCTS
+      }
+    };
+    
+    // ════════════════════════════════════════
+    // STATE
+    // ════════════════════════════════════════
+    const TOTAL_STEPS = 8; // 0-intro,1-4 quiz, 5-products, 6-client, 7-review
+    let answers = { q1:[], q2:null, q3:[], q4:null };
+    let recommendation = null;
+    let selectedProducts = new Set();
+    let proposalId = null;
+    
+    // ════════════════════════════════════════
+    // PROGRESS BAR
+    // ════════════════════════════════════════
+    function updateProgress(stepNum) {
+      const bar = document.getElementById("progressBar");
+      bar.innerHTML = "";
+      for (let i = 0; i < TOTAL_STEPS; i++) {
+        const p = document.createElement("div");
+        p.className = "pip" + (i <= stepNum ? " done" : "");
+        bar.appendChild(p);
+      }
+    }
+    
+    // ════════════════════════════════════════
+    // NAVIGATION
+    // ════════════════════════════════════════
+    function go(n) {
+      // Validation
+      if (n === 6 && !document.getElementById("proposalName")) return;
+      if (n === 7) populateReview();
+    
+      for (let i = 0; i < TOTAL_STEPS; i++) {
+        const el = document.getElementById("step" + i);
+        if (el) el.classList.toggle("active", i === n);
+      }
+      updateProgress(n);
+      // Keep scroll position when navigating
+    }
+    
+    // ════════════════════════════════════════
+    // CHECKBOX TOGGLE
+    // ════════════════════════════════════════
+    function tog(el, qKey) {
+      el.classList.toggle("selected");
+      const vals = [];
+      document.querySelectorAll("#" + qKey + "opts .opt.selected").forEach(o => {
+        vals.push({ v: o.dataset.v, cat: o.dataset.cat });
+      });
+      answers[qKey] = vals;
+      document.getElementById(qKey + "next").disabled = vals.length === 0;
+    }
+    
+    // ════════════════════════════════════════
+    // RADIO SELECT
+    // ════════════════════════════════════════
+    function radio(el, qKey) {
+      document.querySelectorAll("#" + qKey + "opts .opt").forEach(o => o.classList.remove("selected"));
+      el.classList.add("selected");
+      answers[qKey] = { v: el.dataset.v, cat: el.dataset.cat };
+      document.getElementById(qKey + "next").disabled = false;
+    }
+    
+    // ════════════════════════════════════════
+    // SCORING → RESULT
+    // ════════════════════════════════════════
+    function showResult() {
+      let score = { msg: 0, voice: 0, hybrid: 0 };
+    
+      // Q1 checkboxes
+      answers.q1.forEach(a => { score[a.cat] = (score[a.cat] || 0) + 1; });
+      // Q2 radio
+      if (answers.q2) score[answers.q2.cat] = (score[answers.q2.cat] || 0) + 2;
+      // Q3 checkboxes
+      answers.q3.forEach(a => { score[a.cat] = (score[a.cat] || 0) + 1; });
+      // Q4 radio
+      if (answers.q4) score[answers.q4.cat] = (score[answers.q4.cat] || 0) + 2;
+    
+      // Determine winner
+      if (score.msg > 0 && score.voice > 0) recommendation = "hybrid";
+      else if (score.msg >= score.voice && score.msg >= score.hybrid) recommendation = "msg";
+      else if (score.voice > score.msg && score.voice >= score.hybrid) recommendation = "voice";
+      else recommendation = "hybrid";
+    
+      // If explicit hybrid answers, force it
+      if (score.hybrid >= 3) recommendation = "hybrid";
+    
+      renderResult();
+      go(5);
+    }
+    
+    function renderResult() {
+      const r = RESULTS[recommendation];
+    
+      // Result box
+      document.getElementById("resultBox").innerHTML =
+        '<div class="result-box ' + r.cls + '">' +
+        '<p class="result-title">' + r.title + '</p>' +
+        '<p class="result-summary">' + r.summary + '</p>' +
+        '<p style="font-size:12px;font-weight:600;color:#555;margin:0 0 4px;">What Matters Most:</p>' +
+        '<ul class="result-bullets">' + r.bullets.map(b => '<li>' + b + '</li>').join("") + '</ul>' +
+        '</div>';
+    
+      // Product grid — grouped by product line
+      selectedProducts.clear();
+      const grid = document.getElementById("prodGrid");
+      grid.innerHTML = "";
+
+      const groupLabels = { smart_connect: "Smart Connect Bundles", cloud_contact: "Cloud Contact", hosted_pbx: "Hosted PBX & Webex" };
+      const groupOrder = ["smart_connect", "cloud_contact", "hosted_pbx"];
+      const tagMap = { cc:"Cloud Contact", sc:"Smart Connect", pbx:"Hosted PBX" };
+
+      groupOrder.forEach(grp => {
+        const groupPids = r.products.filter(pid => PRODUCTS[pid].group === grp);
+        if (groupPids.length === 0) return;
+
+        const hdr = document.createElement("div");
+        hdr.style.cssText = "font-size:13px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.05em;margin:12px 0 6px;padding-top:4px;border-top:1px solid #eee;";
+        if (grp === groupOrder[0]) hdr.style.borderTop = "none";
+        hdr.textContent = groupLabels[grp];
+        grid.appendChild(hdr);
+
+        groupPids.forEach(pid => {
+          const p = PRODUCTS[pid];
+          const tagHTML = p.tags.map(t => '<span class="prod-tag tag-' + t + '">' + (tagMap[t] || t) + '</span>').join("");
+
+          const div = document.createElement("div");
+          div.className = "prod";
+          div.dataset.pid = pid;
+          div.innerHTML =
+            '<div style="margin-bottom:6px;">' + tagHTML + '</div>' +
+            '<p class="prod-name">' + p.name + '</p>' +
+            '<p class="prod-price">' + p.label + '</p>' +
+            '<p class="prod-desc">' + p.description.replace(/\n/g, " · ") + '</p>';
+          div.onclick = function() { toggleProduct(pid, div); };
+          grid.appendChild(div);
+        });
+      });
+
+      document.getElementById("toClientBtn").disabled = true;
+    }
+    
+    function toggleProduct(pid, el) {
+      if (selectedProducts.has(pid)) { selectedProducts.delete(pid); el.classList.remove("selected"); }
+      else { selectedProducts.add(pid); el.classList.add("selected"); }
+      document.getElementById("toClientBtn").disabled = selectedProducts.size === 0;
+    }
+    
+    // ════════════════════════════════════════
+    // REVIEW
+    // ════════════════════════════════════════
+    function populateReview() {
+      const qty = parseInt(document.getElementById("userCount").value) || 1;
+      const prodNames = [...selectedProducts].map(pid => PRODUCTS[pid].name);
+    
+      const tbl = document.getElementById("reviewTable");
+      const rows = [
+        ["Proposal", document.getElementById("proposalName").value || "—"],
+        ["Client", document.getElementById("clientName").value || "—"],
+        ["Company", document.getElementById("clientCompany").value || "—"],
+        ["Email", document.getElementById("clientEmail").value || "—"],
+        ["Recommendation", RESULTS[recommendation].title],
+        ["Products", selectedProducts.size + " selected"],
+        ["Quantity", qty],
+      ];
+      tbl.innerHTML = rows.map(r =>
+        '<tr><td style="color:#666;padding:5px 0;">' + r[0] + '</td><td style="text-align:right;color:#111;padding:5px 0;">' + r[1] + '</td></tr>'
+      ).join("");
+    
+      // Item preview
+      const preview = document.getElementById("itemPreview");
+      preview.innerHTML = [...selectedProducts].map(pid => {
+        const p = PRODUCTS[pid];
+        const periodLabel = p.period === "one-time" ? " one-time" : "/" + p.period;
+        return '<div style="font-weight:600;padding:4px 0;">📦 ' + p.name + ' — $' + p.price + periodLabel + '</div>';
+      }).join("");
+    
+      // Reset status
+      document.getElementById("statusMsg").className = "status";
+      document.getElementById("itemLog").innerHTML = "";
+      document.getElementById("openBtn").style.display = "none";
+      document.getElementById("generateBtn").style.display = "";
+      document.getElementById("generateBtn").disabled = false;
+    }
+    
+    // ════════════════════════════════════════
+    // GENERATE PROPOSAL
+    // ════════════════════════════════════════
+    async function generateQuote() {
+      const btn    = document.getElementById("generateBtn");
+      const status = document.getElementById("statusMsg");
+      const log    = document.getElementById("itemLog");
+      const qty    = parseInt(document.getElementById("userCount").value) || 1;
+    
+      btn.disabled = true;
+    
+      const prodList = [...selectedProducts].map(pid => PRODUCTS[pid]);
+      const recLabel = RESULTS[recommendation].title.replace("Your Use Case Aligns with ","").replace("Your Use Case Requires ","").replace("Wholesale ","");
+    
+      try {
+        // ── 1. Create proposal ──
+        status.className = "status loading";
+        status.textContent = "Creating proposal…";
+    
+        const prodNames = prodList.map(p => p.name).join(" + ");
+        const companyName = document.getElementById("clientCompany").value.trim();
+        const proposalFullName = (document.getElementById("proposalName").value.trim() || "Smart Connect Quote") + (companyName ? " — " + companyName : "") + " — " + prodNames;
+    
+        const res1 = await fetch(NQ_BASE + "/proposals?" + authQS(), {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            "proposal[name]": proposalFullName,
+            "proposal[load_template_id]": pickTemplateId()
+          }).toString()
+        });
+    
+        const text1 = await res1.text();
+        if (!res1.ok) throw new Error("Proposal creation failed — HTTP " + res1.status + ": " + text1);
+        const data1 = JSON.parse(text1);
+        proposalId = data1.proposal?.id || data1.id;
+        if (!proposalId) throw new Error("No proposal ID: " + text1);
+    
+        // ── 2. Create client & attach ──
+        status.textContent = "Creating client…";
+        const cName = document.getElementById("clientName").value.trim();
+        const parts = cName.split(" ");
+        const cEmail = document.getElementById("clientEmail").value.trim();
+        const cCompany = document.getElementById("clientCompany").value.trim();
+        let clientId = null;
+
+        // Try to create a new client
+        const resC = await fetch(NQ_BASE + "/clients?" + authQS(), {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            "client[first_name]":   parts[0] || "",
+            "client[last_name]":    parts.slice(1).join(" ") || "",
+            "client[company_name]": cCompany,
+            "client[email]":        cEmail
+          }).toString()
+        });
+
+        if (resC.ok) {
+          const dataC = JSON.parse(await resC.text());
+          clientId = dataC.client?.id || dataC.id;
+        } else {
+          // Client may already exist — search by email
+          status.textContent = "Looking up existing client…";
+          const searchRes = await fetch(NQ_BASE + "/clients?" + authQS() + "&search=" + encodeURIComponent(cEmail));
+          if (searchRes.ok) {
+            const searchData = await searchRes.json();
+            const clients = searchData.clients || searchData;
+            if (Array.isArray(clients) && clients.length > 0) {
+              clientId = clients[0].id;
+            }
+          }
+        }
+
+        if (clientId) {
+          status.textContent = "Attaching client…";
+          await fetch(NQ_BASE + "/proposals/" + proposalId + "/contacts?" + authQS(), {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({ "contact[client_id]": clientId }).toString()
+          });
+        }
+    
+        // ── 3. Add each selected product as a line item ──
+        status.textContent = "Adding line items…";
+    
+        log.innerHTML = prodList.map((p, i) =>
+          '<div class="ilog-row" id="ilog-' + i + '">' +
+          '<div class="idot pending" id="idot-' + i + '"></div>' +
+          '<span style="flex:1;color:#333;">' + p.name + '</span>' +
+          '<span style="font-size:11px;color:#999;" id="istat-' + i + '">pending</span>' +
+          '</div>'
+        ).join("");
+    
+        let allOk = true;
+        for (let i = 0; i < prodList.length; i++) {
+          const p = prodList[i];
+          const dot  = document.getElementById("idot-" + i);
+          const stat = document.getElementById("istat-" + i);
+          stat.textContent = "sending…";
+          status.textContent = "Adding item " + (i + 1) + " of " + prodList.length + "…";
+    
+          try {
+            const body = new URLSearchParams({
+              "item[name]":              p.name,
+              "item[description]":       p.description,
+              "item[kind]":              "item",
+              "item[price]":             p.price,
+              "item[quantity]":          qty.toString(),
+              "item[vat]":               "0.0",
+              "item[price_vat]":         p.price,
+              "item[purchase_price]":    p.price,
+              "item[discount]":          "",
+              "item[discount_type]":     "relative",
+              "item[optional]":          "false",
+              "item[optional_checked]":  "false",
+              "item[period]":            p.period === "monthly" ? "30" : p.period === "yearly" ? "365" : "",
+              "item[position]":          i.toString()
+            });
+    
+            const resI = await fetch(
+              NQ_BASE + "/proposals/" + proposalId + "/items?" + authQS(),
+              { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: body.toString() }
+            );
+    
+            if (resI.ok) {
+              dot.className = "idot ok";
+              stat.textContent = "✓ added";
+            } else {
+              const errText = await resI.text();
+              dot.className = "idot fail";
+              stat.textContent = "HTTP " + resI.status;
+              stat.title = errText;
+              allOk = false;
+            }
+          } catch (e) {
+            dot.className = "idot fail";
+            stat.textContent = "error";
+            allOk = false;
+          }
+        }
+    
+        // ── 4. Send email to client + CC team ──
+        status.textContent = "Sending email to client…";
+        const clientFirstName = (parts[0]) || "there";
+
+        const emailSubject = "Your Iristel Proposal" + (cCompany ? " — " + cCompany : "");
+        const emailBody = "Hi " + clientFirstName + ",\n\nThank you for your interest! Please find your customized proposal attached.\n\nClick the link below to view your full proposal, review pricing, and approve directly online.\n\nIf you have any questions, feel free to reply to this email.\n\nBest regards,\nThe Iristel Team";
+
+        try {
+          const resEmail = await fetch(NQ_BASE + "/proposals/" + proposalId + "/send_email?" + authQS(), {
+            method: "PUT",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+              "email_to": cEmail,
+              "email_subject": emailSubject,
+              "email_body": emailBody,
+              "email_attach_pdf": "true",
+              "email_cc": TEAM_NOTIFY.join(",")
+            }).toString()
+          });
+
+          if (resEmail.ok) {
+            log.innerHTML += '<div class="ilog-row"><div class="idot ok"></div><span style="flex:1;color:#333;">Email sent to ' + cEmail + '</span><span style="font-size:11px;color:#999;">✓ sent</span></div>';
+          } else {
+            log.innerHTML += '<div class="ilog-row"><div class="idot fail"></div><span style="flex:1;color:#333;">Email to ' + cEmail + '</span><span style="font-size:11px;color:#999;">failed (HTTP ' + resEmail.status + ')</span></div>';
+          }
+        } catch (emailErr) {
+          log.innerHTML += '<div class="ilog-row"><div class="idot fail"></div><span style="flex:1;color:#333;">Email to ' + cEmail + '</span><span style="font-size:11px;color:#999;">error</span></div>';
+        }
+
+        if (allOk) {
+          status.className = "status success";
+          status.textContent = "Proposal #" + proposalId + " created with " + prodList.length + " item(s) — email sent!";
+        } else {
+          status.className = "status error";
+          status.textContent = "Proposal #" + proposalId + " created but some items failed — check log above.";
+        }
+
+        btn.style.display = "none";
+        document.getElementById("openBtn").style.display = "";
+    
+      } catch (err) {
+        status.className = "status error";
+        status.textContent = "Error: " + err.message;
+        btn.disabled = false;
+      }
+    }
+    
+    function openProposal() {
+      if (proposalId) window.open("https://app.niftyquoter.com/proposals/" + proposalId + "/edit", "_blank");
+    }
+    
+    // Init
+    updateProgress(0);
+    </script>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="card">
+
+    <div class="progress" id="progressBar"></div>
+
+    <!-- ═══════ STEP 0: INTRO ═══════ -->
+    <div class="step active" id="step0">
+      <div class="intro-icon">📡</div>
+      <p class="step-title">Not Sure Which Smart Connect Bundle You Need?</p>
+      <p class="step-sub">Answer a few questions to identify whether a messaging, voice, or combined unified communications solution fits your use case.</p>
+      <button class="btn btn-primary" style="width:100%;" onclick="go(1)">Start Selector</button>
+    </div>
+
+    <!-- ═══════ STEP 1: PRIMARY USE CASE (checkbox) ═══════ -->
+    <div class="step" id="step1">
+      <p class="step-label">Step 1 of 4</p>
+      <p class="step-title">What are you primarily enabling today?</p>
+      <p class="step-sub">Select all that apply.</p>
+      <div class="opt-grid" id="q1opts">
+        <div class="opt" data-v="notif" data-cat="msg" onclick="tog(this,'q1')"><div class="opt-check">✓</div><span class="opt-text">Customer notifications or alerts</span></div>
+        <div class="opt" data-v="otp" data-cat="msg" onclick="tog(this,'q1')"><div class="opt-check">✓</div><span class="opt-text">Authentication or verification (OTP, 2FA)</span></div>
+        <div class="opt" data-v="calling" data-cat="voice" onclick="tog(this,'q1')"><div class="opt-check">✓</div><span class="opt-text">Real-time calling</span></div>
+        <div class="opt" data-v="ucaas" data-cat="voice" onclick="tog(this,'q1')"><div class="opt-check">✓</div><span class="opt-text">UCaaS or VoIP services</span></div>
+        <div class="opt" data-v="pstn" data-cat="voice" onclick="tog(this,'q1')"><div class="opt-check">✓</div><span class="opt-text">Carrier interconnection or PSTN access</span></div>
+        <div class="opt" data-v="multi" data-cat="hybrid" onclick="tog(this,'q1')"><div class="opt-check">✓</div><span class="opt-text">Multiple services across a platform</span></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-back" onclick="go(0)">← Back</button>
+        <button class="btn btn-primary" id="q1next" disabled onclick="go(2)">Continue</button>
+      </div>
+    </div>
+
+    <!-- ═══════ STEP 2: TRAFFIC PROFILE (radio) ═══════ -->
+    <div class="step" id="step2">
+      <p class="step-label">Step 2 of 4</p>
+      <p class="step-title">How would you describe your traffic?</p>
+      <p class="step-sub">Choose the option that best matches your current traffic pattern.</p>
+      <div class="opt-grid" id="q2opts">
+        <div class="opt opt-radio" data-v="bursty" data-cat="msg" onclick="radio(this,'q2')"><div class="opt-check">●</div><span class="opt-text">High-volume, bursty traffic</span></div>
+        <div class="opt opt-radio" data-v="campaign" data-cat="msg" onclick="radio(this,'q2')"><div class="opt-check">●</div><span class="opt-text">Campaign-based traffic</span></div>
+        <div class="opt opt-radio" data-v="realtime" data-cat="voice" onclick="radio(this,'q2')"><div class="opt-check">●</div><span class="opt-text">Continuous, real-time traffic</span></div>
+        <div class="opt opt-radio" data-v="alwayson" data-cat="hybrid" onclick="radio(this,'q2')"><div class="opt-check">●</div><span class="opt-text">Always-on platform traffic</span></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-back" onclick="go(1)">← Back</button>
+        <button class="btn btn-primary" id="q2next" disabled onclick="go(3)">Continue</button>
+      </div>
+    </div>
+
+    <!-- ═══════ STEP 3: COMPLIANCE & RISK (checkbox) ═══════ -->
+    <div class="step" id="step3">
+      <p class="step-label">Step 3 of 4</p>
+      <p class="step-title">Which concerns are most relevant to you?</p>
+      <p class="step-sub">Select all that apply.</p>
+      <div class="opt-grid" id="q3opts">
+        <div class="opt" data-v="filtering" data-cat="msg" onclick="tog(this,'q3')"><div class="opt-check">✓</div><span class="opt-text">Message filtering or blocking</span></div>
+        <div class="opt" data-v="campaign_reg" data-cat="msg" onclick="tog(this,'q3')"><div class="opt-check">✓</div><span class="opt-text">Campaign registration and approval</span></div>
+        <div class="opt" data-v="stir" data-cat="voice" onclick="tog(this,'q3')"><div class="opt-check">✓</div><span class="opt-text">Call authentication (STIR/SHAKEN)</span></div>
+        <div class="opt" data-v="numbering" data-cat="voice" onclick="tog(this,'q3')"><div class="opt-check">✓</div><span class="opt-text">Numbering or portability requirements</span></div>
+        <div class="opt" data-v="fraud" data-cat="hybrid" onclick="tog(this,'q3')"><div class="opt-check">✓</div><span class="opt-text">Fraud or abuse prevention</span></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-back" onclick="go(2)">← Back</button>
+        <button class="btn btn-primary" id="q3next" disabled onclick="go(4)">Continue</button>
+      </div>
+    </div>
+
+    <!-- ═══════ STEP 4: SCALE (radio) ═══════ -->
+    <div class="step" id="step4">
+      <p class="step-label">Step 4 of 4</p>
+      <p class="step-title">What best describes how you scale?</p>
+      <p class="step-sub">Choose the closest match.</p>
+      <div class="opt-grid" id="q4opts">
+        <div class="opt opt-radio" data-v="users" data-cat="msg" onclick="radio(this,'q4')"><div class="opt-check">●</div><span class="opt-text">Scaling users or application traffic</span></div>
+        <div class="opt opt-radio" data-v="minutes" data-cat="voice" onclick="radio(this,'q4')"><div class="opt-check">●</div><span class="opt-text">Scaling voice minutes or concurrent calls</span></div>
+        <div class="opt opt-radio" data-v="geo" data-cat="hybrid" onclick="radio(this,'q4')"><div class="opt-check">●</div><span class="opt-text">Expanding geographic coverage</span></div>
+        <div class="opt opt-radio" data-v="margins" data-cat="hybrid" onclick="radio(this,'q4')"><div class="opt-check">●</div><span class="opt-text">Optimizing margins at scale</span></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-back" onclick="go(3)">← Back</button>
+        <button class="btn btn-primary" id="q4next" disabled onclick="showResult()">View Results</button>
+      </div>
+    </div>
+
+    <!-- ═══════ STEP 5: RESULT + PRODUCT PICKER ═══════ -->
+    <div class="step" id="step5">
+      <div id="resultBox"></div>
+
+      <p class="step-label">Recommended products</p>
+      <p class="step-sub" style="margin-bottom:10px;">Select the products to include in the proposal. You can pick multiple.</p>
+      <div class="prod-grid" id="prodGrid"></div>
+
+      <hr class="divider">
+      <div class="field">
+        <label class="label">Quantity (per line item)</label>
+        <input type="number" id="userCount" value="1" min="1" style="max-width:120px;" />
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-back" onclick="go(4)">← Back</button>
+        <button class="btn btn-primary" id="toClientBtn" disabled onclick="go(6)">Next: Client details →</button>
+      </div>
+    </div>
+
+    <!-- ═══════ STEP 6: CLIENT DETAILS ═══════ -->
+    <div class="step" id="step6">
+      <p class="step-label">Client information</p>
+      <p class="step-title" style="font-size:16px;">Let's Tailor This to Your Business</p>
+      <p class="step-sub">Fill in client details to generate the NiftyQuoter proposal.</p>
+
+      <div class="field">
+        <label class="label">Proposal name</label>
+        <input type="text" id="proposalName" placeholder="e.g. Smart Connect Quote — Acme Corp" />
+      </div>
+      <div class="row2">
+        <div class="field"><label class="label">Client name</label><input type="text" id="clientName" placeholder="First & last name" /></div>
+        <div class="field"><label class="label">Company name</label><input type="text" id="clientCompany" placeholder="Company name" /></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label class="label">Client email</label><input type="email" id="clientEmail" placeholder="client@company.com" /></div>
+        <div class="field"><label class="label">Role / Title</label><input type="text" id="clientRole" placeholder="e.g. CTO" /></div>
+      </div>
+      <div class="field">
+        <label class="label">Estimated monthly traffic</label>
+        <input type="text" id="estTraffic" placeholder="e.g. 500k msgs, 100k minutes" />
+      </div>
+      <p style="font-size:11px;color:#999;margin:0 0 8px;">Your information is used only to support your inquiry.</p>
+
+      <div class="btn-row">
+        <button class="btn btn-back" onclick="go(5)">← Back</button>
+        <button class="btn btn-primary" onclick="go(7)">Review & generate →</button>
+      </div>
+    </div>
+
+    <!-- ═══════ STEP 7: REVIEW & GENERATE ═══════ -->
+    <div class="step" id="step7">
+      <p class="step-label">Review your quote</p>
+      <div style="background:#f9f9f9;border-radius:8px;padding:14px;margin-bottom:1rem;">
+        <table style="width:100%;font-size:13px;border-collapse:collapse;" id="reviewTable"></table>
+      </div>
+
+      <p class="step-label">Line items to add</p>
+      <div id="itemPreview" style="background:#f9f9f9;border-radius:8px;padding:10px 14px;margin-bottom:1rem;font-size:13px;"></div>
+
+      <button class="btn btn-primary" style="width:100%;" id="generateBtn" onclick="generateQuote()">Generate quote in NiftyQuoter</button>
+      <div class="btn-row" style="margin-top:8px;">
+        <button class="btn btn-back" onclick="go(6)">← Back</button>
+        <button class="btn btn-primary" id="openBtn" style="display:none;" onclick="openProposal()">Open in NiftyQuoter →</button>
+      </div>
+      <div class="status" id="statusMsg"></div>
+      <div class="ilog" id="itemLog"></div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

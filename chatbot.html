@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Iris — Iristel Assistant</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: #f3f4f6; min-height: 100vh; }
+
+    /* ── Floating avatar button ── */
+    .fab {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      width: 200px;
+      height: auto;
+      border-radius: 16px;
+      border: none;
+      cursor: pointer;
+      background: transparent;
+      padding: 4px 0;
+      z-index: 1000;
+      transition: transform .2s;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,.2));
+    }
+    .fab:hover { transform: scale(1.1); }
+    .fab img { width: 100%; height: auto; object-fit: contain; }
+    .fab-title {
+      display: block;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      color: #1e3a5f;
+      text-align: center;
+      margin-bottom: 2px;
+    }
+
+    /* Pulse ring behind avatar */
+    .fab::before {
+      content: "";
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      background: rgba(62,140,203,.25);
+      animation: pulse 2s ease-in-out infinite;
+      z-index: -1;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: .6; }
+      50% { transform: scale(1.15); opacity: 0; }
+    }
+    .fab.open::before { animation: none; opacity: 0; }
+
+    /* Greeting tooltip */
+    .fab-tooltip {
+      position: fixed;
+      bottom: 236px;
+      right: 28px;
+      background: #fff;
+      color: #333;
+      padding: 10px 16px;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,.12);
+      font-size: 13px;
+      max-width: 220px;
+      z-index: 999;
+      transition: opacity .3s, transform .3s;
+    }
+    .fab-tooltip::after {
+      content: "";
+      position: absolute;
+      bottom: -6px;
+      right: 28px;
+      width: 12px; height: 12px;
+      background: #fff;
+      transform: rotate(45deg);
+      box-shadow: 2px 2px 4px rgba(0,0,0,.06);
+    }
+    .fab-tooltip.hidden { opacity: 0; transform: translateY(8px); pointer-events: none; }
+
+    /* ── Chat window ── */
+    .chat-window {
+      position: fixed;
+      bottom: 240px;
+      right: 28px;
+      width: 400px;
+      height: 540px;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 40px rgba(0,0,0,.15);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 1001;
+      transition: opacity .25s, transform .25s;
+    }
+    .chat-window.hidden {
+      opacity: 0;
+      transform: translateY(20px) scale(.95);
+      pointer-events: none;
+    }
+
+    /* ── Header ── */
+    .chat-header {
+      background: linear-gradient(135deg, #1e3a5f 0%, #3e8ccb 100%);
+      color: #fff;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .header-avatar {
+      width: 36px; height: 36px;
+      flex-shrink: 0;
+    }
+    .header-avatar img { width: 100%; height: 100%; object-fit: contain; }
+    .header-text h1 { font-size: 15px; font-weight: 600; }
+    .header-text p { font-size: 11px; opacity: .85; margin-top: 1px; }
+    .status-dot {
+      width: 7px; height: 7px; border-radius: 50%; background: #34d399;
+      display: inline-block; margin-right: 3px; vertical-align: middle;
+    }
+    .close-btn {
+      margin-left: auto;
+      background: none; border: none;
+      color: rgba(255,255,255,.7);
+      font-size: 20px; cursor: pointer;
+      padding: 4px 8px; border-radius: 6px;
+      transition: all .15s;
+    }
+    .close-btn:hover { color: #fff; background: rgba(255,255,255,.15); }
+
+    /* ── Messages area ── */
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      scroll-behavior: smooth;
+    }
+
+    .msg {
+      max-width: 82%;
+      padding: 9px 13px;
+      border-radius: 14px;
+      font-size: 13px;
+      line-height: 1.55;
+      word-wrap: break-word;
+    }
+    .msg-bot {
+      background: #f0f4f8;
+      color: #1a1a1a;
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+    .msg-user {
+      background: #3e8ccb;
+      color: #fff;
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+    }
+    .msg-bot p { margin-bottom: 6px; }
+    .msg-bot p:last-child { margin-bottom: 0; }
+    .msg-bot ul, .msg-bot ol { margin: 4px 0 6px 16px; }
+    .msg-bot li { margin-bottom: 2px; }
+    .msg-bot strong { font-weight: 600; }
+    .msg-bot code { background: #e2e8f0; padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+    .msg-bot h3 { font-size: 13px; font-weight: 600; margin: 6px 0 3px; }
+
+    /* Typing indicator */
+    .typing { display: flex; gap: 4px; padding: 10px 14px; align-self: flex-start; }
+    .typing span {
+      width: 7px; height: 7px; border-radius: 50%; background: #bbb;
+      animation: bounce .6s infinite alternate;
+    }
+    .typing span:nth-child(2) { animation-delay: .15s; }
+    .typing span:nth-child(3) { animation-delay: .3s; }
+    @keyframes bounce { to { opacity: .3; transform: translateY(-4px); } }
+
+    /* ── Quick replies ── */
+    .quick-replies {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      padding: 0 14px 6px;
+      flex-shrink: 0;
+    }
+    .qr-btn {
+      padding: 5px 10px;
+      font-size: 11px;
+      border: 1px solid #d1d5db;
+      border-radius: 20px;
+      background: #fff;
+      color: #374151;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .qr-btn:hover { background: #f0f4f8; border-color: #3e8ccb; color: #3e8ccb; }
+
+    /* ── Input area ── */
+    .chat-input {
+      display: flex;
+      gap: 8px;
+      padding: 10px 14px;
+      border-top: 1px solid #e5e7eb;
+      background: #fafafa;
+      flex-shrink: 0;
+    }
+    .chat-input input {
+      flex: 1;
+      padding: 9px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 24px;
+      font-size: 13px;
+      outline: none;
+      background: #fff;
+    }
+    .chat-input input:focus { border-color: #3e8ccb; }
+    .chat-input input:disabled { opacity: .5; }
+    .send-btn {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: #3e8ccb;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .15s;
+      flex-shrink: 0;
+    }
+    .send-btn:hover { background: #2d6fa3; }
+    .send-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* ── Quote CTA banner ── */
+    .cta-banner {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 10px;
+      margin-top: 4px;
+      align-self: flex-start;
+      max-width: 82%;
+    }
+    .cta-banner a {
+      font-size: 12px;
+      font-weight: 600;
+      color: #1e40af;
+      text-decoration: none;
+    }
+    .cta-banner a:hover { text-decoration: underline; }
+
+    /* ── Action result cards ── */
+    .action-card {
+      align-self: flex-start;
+      max-width: 92%;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 12px;
+      overflow-x: auto;
+    }
+    .action-card-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      color: #64748b;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .action-card-title .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+    }
+    .dot-ok { background: #22c55e; }
+    .dot-err { background: #ef4444; }
+    .action-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .action-table th {
+      text-align: left;
+      padding: 4px 8px;
+      background: #e2e8f0;
+      font-weight: 600;
+      color: #334155;
+      font-size: 11px;
+    }
+    .action-table td {
+      padding: 4px 8px;
+      border-bottom: 1px solid #f1f5f9;
+      color: #475569;
+    }
+    .action-table tr:last-child td { border-bottom: none; }
+    .action-kv { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; }
+    .action-kv dt { font-weight: 600; color: #475569; }
+    .action-kv dd { color: #1e293b; margin: 0; }
+    .action-error {
+      background: #fef2f2;
+      border-color: #fecaca;
+      color: #991b1b;
+      padding: 10px 12px;
+      border-radius: 8px;
+    }
+
+    /* ── Scrollbar ── */
+    .chat-messages::-webkit-scrollbar { width: 4px; }
+    .chat-messages::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+
+    /* ── Mobile responsive ── */
+    @media (max-width: 480px) {
+      .chat-window {
+        bottom: 0; right: 0;
+        width: 100%; height: 100%;
+        border-radius: 0;
+      }
+      .fab { bottom: 16px; right: 16px; width: 60px; height: 60px; }
+      .fab-tooltip { bottom: 88px; right: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Floating avatar button -->
+<button class="fab" id="fab" onclick="toggleChat()">
+  <span class="fab-title">IRISTEL</span>
+  <img src="avatar.png" alt="Iris" />
+</button>
+
+<!-- Greeting tooltip (shows on load, hides on chat open) -->
+<div class="fab-tooltip" id="fabTooltip">
+  Hi! I'm Iris. Need help finding the right plan?
+</div>
+
+<!-- Chat window (hidden by default) -->
+<div class="chat-window hidden" id="chatWindow">
+  <!-- Header -->
+  <div class="chat-header">
+    <div class="header-avatar"><img src="avatar.png" alt="Iris" /></div>
+    <div class="header-text">
+      <h1>Iris</h1>
+      <p><span class="status-dot"></span>Iristel Sales Assistant</p>
+    </div>
+    <button class="close-btn" onclick="toggleChat()">&times;</button>
+  </div>
+
+  <!-- Messages -->
+  <div class="chat-messages" id="messages"></div>
+
+  <!-- Quick replies -->
+  <div class="quick-replies" id="quickReplies">
+    <button class="qr-btn" onclick="sendQuick(this)">Show available plans</button>
+    <button class="qr-btn" onclick="sendQuick(this)">Compare Smart Connect bundles</button>
+    <button class="qr-btn" onclick="sendQuick(this)">Search phone numbers in Toronto</button>
+    <button class="qr-btn" onclick="sendQuick(this)">Create a new account</button>
+    <button class="qr-btn" onclick="sendQuick(this)">Check my balance</button>
+    <button class="qr-btn" onclick="sendQuick(this)">Get a quote</button>
+    <button class="qr-btn" onclick="summarizeCurrentPage()">Summarize this page</button>
+  </div>
+
+  <!-- Input -->
+  <div class="chat-input">
+    <input type="text" id="userInput" placeholder="Ask Iris anything..." autocomplete="off" />
+    <button class="send-btn" id="sendBtn" onclick="send()">&#x27A4;</button>
+  </div>
+</div>
+
+<script>
+  const chatWindow = document.getElementById("chatWindow");
+  const fab = document.getElementById("fab");
+  const tooltip = document.getElementById("fabTooltip");
+  const messagesEl = document.getElementById("messages");
+  const inputEl = document.getElementById("userInput");
+  const sendBtnEl = document.getElementById("sendBtn");
+  const quickEl = document.getElementById("quickReplies");
+
+  let history = [];
+  let busy = false;
+  let chatOpened = false;
+
+  // Auto-hide tooltip after 6 seconds
+  setTimeout(() => { tooltip.classList.add("hidden"); }, 6000);
+
+  function toggleChat() {
+    const isHidden = chatWindow.classList.contains("hidden");
+    chatWindow.classList.toggle("hidden");
+    fab.classList.toggle("open", isHidden);
+    tooltip.classList.add("hidden");
+
+    if (isHidden) {
+      if (!chatOpened) {
+        chatOpened = true;
+        addBotMessage("Hi! I'm **Iris**, your Iristel assistant.\n\nI can help you find the right unified communications solution for your business. Ask me about **Smart Connect Bundles**, **Hosted PBX & Webex**, or **Cloud Contact Center** solutions!");
+      }
+      setTimeout(() => inputEl.focus(), 100);
+    }
+  }
+
+  inputEl.addEventListener("keydown", e => {
+    if (e.key === "Enter" && !busy) send();
+  });
+
+  function sendQuick(btn) {
+    inputEl.value = btn.textContent;
+    send();
+  }
+
+  async function send() {
+    const text = inputEl.value.trim();
+    if (!text || busy) return;
+
+    busy = true;
+    inputEl.value = "";
+    inputEl.disabled = true;
+    sendBtnEl.disabled = true;
+    quickEl.style.display = "none";
+
+    addUserMessage(text);
+    history.push({ role: "user", content: text });
+
+    const typingEl = showTyping();
+
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: history })
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.details || "Server error " + res.status);
+      }
+
+      const data = await res.json();
+      const reply = data.reply;
+      typingEl.remove();
+
+      // Check if Iris wants to trigger a summarization
+      if (reply.includes("[SUMMARIZE_PAGE]")) {
+        addBotMessage("Let me summarize this page for you...");
+        await doSummarizeCurrentPage();
+      } else if (reply.match(/\[SUMMARIZE_URL:(https?:\/\/[^\]]+)\]/)) {
+        const url = reply.match(/\[SUMMARIZE_URL:(https?:\/\/[^\]]+)\]/)[1];
+        addBotMessage("Let me summarize that page for you...");
+        await doSummarizeUrl(url);
+      } else if (data.action) {
+        // Transactional action was executed
+        if (reply) {
+          addBotMessage(reply);
+        }
+        renderActionResult(data.action);
+        // Add follow-up text from Iris
+        if (data.action.followUp) {
+          addBotMessage(data.action.followUp);
+        }
+        // Add to history so Iris knows what happened
+        const resultSummary = data.action.result.error
+          ? `[System: Action ${data.action.name} failed: ${JSON.stringify(data.action.result.data || data.action.result.message)}]`
+          : `[System: Action ${data.action.name} succeeded. Result: ${JSON.stringify(data.action.result.data).slice(0, 500)}]`;
+        history.push({ role: "assistant", content: (reply || "") + "\n" + resultSummary });
+      } else {
+        addBotMessage(reply);
+        history.push({ role: "assistant", content: reply });
+      }
+
+      if (history.length >= 4 && /quote|ready|buy|sign up|interested|proposal/i.test(text)) {
+        addQuoteCTA();
+      }
+    } catch (err) {
+      typingEl.remove();
+      addBotMessage("Sorry, I'm having trouble connecting right now. Please try again in a moment.");
+      console.error("Chat error:", err);
+    }
+
+    busy = false;
+    inputEl.disabled = false;
+    sendBtnEl.disabled = false;
+    inputEl.focus();
+  }
+
+  // ── Summarize features ──
+  async function summarizeCurrentPage() {
+    if (busy) return;
+    busy = true;
+    inputEl.disabled = true;
+    sendBtnEl.disabled = true;
+    quickEl.style.display = "none";
+
+    addUserMessage("Summarize this page");
+    history.push({ role: "user", content: "Summarize this page" });
+
+    await doSummarizeCurrentPage();
+
+    busy = false;
+    inputEl.disabled = false;
+    sendBtnEl.disabled = false;
+    inputEl.focus();
+  }
+
+  async function doSummarizeCurrentPage() {
+    const typingEl = showTyping();
+    try {
+      // Try to get the host page URL (when embedded as widget on iristel.com)
+      let pageUrl;
+      try {
+        pageUrl = window.parent !== window ? window.parent.location.href : window.location.href;
+      } catch {
+        pageUrl = window.location.href;
+      }
+
+      // Try the URL-based approach first (works for iristel.com pages)
+      const res = await fetch("/api/features/summarize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: pageUrl })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        typingEl.remove();
+        const summaryMsg = `**Page Summary: ${data.title}**\n\n${data.summary}`;
+        addBotMessage(summaryMsg);
+        history.push({ role: "assistant", content: summaryMsg });
+        return;
+      }
+
+      // Fallback: grab text from the parent page and use /text endpoint
+      let pageText = "";
+      try {
+        pageText = window.parent.document.body.innerText;
+      } catch {
+        pageText = document.body.innerText;
+      }
+
+      const res2 = await fetch("/api/features/summarize/text", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: pageText, context: pageUrl })
+      });
+
+      if (res2.ok) {
+        const data2 = await res2.json();
+        typingEl.remove();
+        const summaryMsg = `**Page Summary**\n\n${data2.summary}`;
+        addBotMessage(summaryMsg);
+        history.push({ role: "assistant", content: summaryMsg });
+      } else {
+        throw new Error("Summarize failed");
+      }
+    } catch (err) {
+      typingEl.remove();
+      addBotMessage("Sorry, I couldn't summarize this page. It may not be on an allowed domain.");
+      console.error("Summarize error:", err);
+    }
+  }
+
+  async function doSummarizeUrl(url) {
+    const typingEl = showTyping();
+    try {
+      const res = await fetch("/api/features/summarize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url })
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Summarize failed");
+      }
+
+      const data = await res.json();
+      typingEl.remove();
+      const summaryMsg = `**Summary: ${data.title}**\n\n${data.summary}`;
+      addBotMessage(summaryMsg);
+      history.push({ role: "assistant", content: summaryMsg });
+    } catch (err) {
+      typingEl.remove();
+      addBotMessage("Sorry, I couldn't summarize that page. " + (err.message || ""));
+      console.error("Summarize URL error:", err);
+    }
+  }
+
+  // ── Render helpers ──
+  function addUserMessage(text) {
+    const div = document.createElement("div");
+    div.className = "msg msg-user";
+    div.textContent = text;
+    messagesEl.appendChild(div);
+    scrollBottom();
+  }
+
+  function addBotMessage(text) {
+    const div = document.createElement("div");
+    div.className = "msg msg-bot";
+    div.innerHTML = renderMarkdown(text);
+    messagesEl.appendChild(div);
+    scrollBottom();
+  }
+
+  function addQuoteCTA() {
+    // No longer linking to index.html — quotes are created inline via chat
+  }
+
+  function showTyping() {
+    const div = document.createElement("div");
+    div.className = "typing";
+    div.innerHTML = "<span></span><span></span><span></span>";
+    messagesEl.appendChild(div);
+    scrollBottom();
+    return div;
+  }
+
+  function scrollBottom() {
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  // ── Action result renderer ──
+  function renderActionResult(action) {
+    const { name, result } = action;
+    const div = document.createElement("div");
+    div.className = "action-card";
+
+    if (result.error) {
+      div.classList.add("action-error");
+      div.innerHTML = `<div class="action-card-title"><span class="dot dot-err"></span> Action Failed</div>` +
+        `<p>${result.message || JSON.stringify(result.data)}</p>`;
+      messagesEl.appendChild(div);
+      scrollBottom();
+      return;
+    }
+
+    const data = result.data;
+    let html = `<div class="action-card-title"><span class="dot dot-ok"></span> ${formatActionName(name)}</div>`;
+
+    // Render based on action type
+    if (name === "list_plans" && data.plans) {
+      html += `<table class="action-table"><tr><th>Plan</th><th>Type</th><th>Billing</th><th>$/cycle</th></tr>`;
+      data.plans.slice(0, 20).forEach(p => {
+        html += `<tr><td><strong>${p.planCode}</strong></td><td>${p.planType || "—"}</td><td>${p.billingTypeLabel || p.billingType}</td><td>$${p.recurringCharge}</td></tr>`;
+      });
+      html += `</table>`;
+      if (data.plans.length > 20) html += `<p style="color:#64748b;margin-top:6px;">...and ${data.plans.length - 20} more</p>`;
+
+    } else if (name === "list_accounts" && data.accounts) {
+      html += `<p style="color:#64748b;margin-bottom:6px;">${data.total} accounts found (page ${data.page}/${data.totalPages})</p>`;
+      html += `<table class="action-table"><tr><th>ID</th><th>Name</th><th>Status</th><th>Email</th></tr>`;
+      data.accounts.forEach(a => {
+        html += `<tr><td>${a.accountId}</td><td>${a.name || "—"}</td><td>${a.status}</td><td>${a.contact?.emailAddress || "—"}</td></tr>`;
+      });
+      html += `</table>`;
+
+    } else if (name === "get_account" && data.accountId) {
+      html += `<dl class="action-kv">`;
+      html += `<dt>Account ID</dt><dd>${data.accountId}</dd>`;
+      html += `<dt>Name</dt><dd>${data.name || data.contact?.fname + " " + data.contact?.lname}</dd>`;
+      html += `<dt>Status</dt><dd>${data.status}</dd>`;
+      html += `<dt>Email</dt><dd>${data.contact?.emailAddress || "—"}</dd>`;
+      html += `<dt>City</dt><dd>${data.contact?.city || "—"}, ${data.contact?.province || ""}</dd>`;
+      html += `<dt>Since</dt><dd>${data.memberSince || "—"}</dd>`;
+      html += `</dl>`;
+
+    } else if (name === "create_account" && data.accountId) {
+      html += `<dl class="action-kv">`;
+      html += `<dt>Account ID</dt><dd><strong>${data.accountId}</strong></dd>`;
+      html += `<dt>Status</dt><dd>${data.status}</dd>`;
+      html += `<dt>Name</dt><dd>${data.name}</dd>`;
+      html += `<dt>Provider</dt><dd>${data.provider}</dd>`;
+      html += `</dl>`;
+
+    } else if ((name === "list_services") && (data.services || Array.isArray(data))) {
+      const svcs = data.services || data;
+      html += `<table class="action-table"><tr><th>Service ID</th><th>Plan</th><th>Status</th><th>Phone</th></tr>`;
+      svcs.slice(0, 15).forEach(s => {
+        html += `<tr><td>${s.serviceId}</td><td>${s.provisioning?.planCode || "—"}</td><td>${s.status}</td><td>${s.provisioning?.telephoneNumber || "—"}</td></tr>`;
+      });
+      html += `</table>`;
+
+    } else if (name === "add_service" && data.serviceId) {
+      html += `<dl class="action-kv">`;
+      html += `<dt>Service ID</dt><dd><strong>${data.serviceId}</strong></dd>`;
+      html += `<dt>Plan</dt><dd>${data.provisioning?.planCode || "—"}</dd>`;
+      html += `<dt>Recurring</dt><dd>$${data.billing?.recurringCharge || "—"}/cycle</dd>`;
+      html += `<dt>Phone</dt><dd>${data.provisioning?.telephoneNumber || "Pending"}</dd>`;
+      html += `<dt>SIM</dt><dd>${data.provisioning?.SIM || "Pending"}</dd>`;
+      html += `</dl>`;
+
+    } else if (name === "view_balance") {
+      html += `<dl class="action-kv">`;
+      for (const [k, v] of Object.entries(data)) {
+        html += `<dt>${k}</dt><dd>${typeof v === "number" ? "$" + v.toFixed(2) : v}</dd>`;
+      }
+      html += `</dl>`;
+
+    } else if (name === "list_invoices" && data.invoices) {
+      html += `<table class="action-table"><tr><th>Invoice</th><th>Date</th><th>Amount</th><th>Status</th></tr>`;
+      data.invoices.slice(0, 15).forEach(inv => {
+        html += `<tr><td>${inv.invoiceId || inv.id || "—"}</td><td>${inv.date || inv.createdOn || "—"}</td><td>$${inv.amount || inv.total || "—"}</td><td>${inv.status || "—"}</td></tr>`;
+      });
+      html += `</table>`;
+
+    } else if (name === "search_numbers") {
+      const nums = data.telephoneNumbers || data.numbers || data;
+      if (Array.isArray(nums)) {
+        html += `<p style="color:#64748b;margin-bottom:6px;">${nums.length} numbers found</p>`;
+        html += nums.slice(0, 20).map(n => `<span style="display:inline-block;background:#e2e8f0;padding:2px 8px;border-radius:4px;margin:2px;font-family:monospace;">${typeof n === "string" ? n : n.telephoneNumber || JSON.stringify(n)}</span>`).join("");
+        if (nums.length > 20) html += `<p style="color:#64748b;margin-top:6px;">...and ${nums.length - 20} more</p>`;
+      } else {
+        html += `<pre style="font-size:11px;overflow-x:auto;">${JSON.stringify(data, null, 2)}</pre>`;
+      }
+
+    } else if (name === "check_portability") {
+      html += `<dl class="action-kv">`;
+      for (const [k, v] of Object.entries(data)) {
+        html += `<dt>${k}</dt><dd>${v}</dd>`;
+      }
+      html += `</dl>`;
+
+    } else if (name === "add_payment") {
+      html += `<dl class="action-kv">`;
+      for (const [k, v] of Object.entries(data)) {
+        html += `<dt>${k}</dt><dd>${v}</dd>`;
+      }
+      html += `</dl>`;
+
+    } else if (name === "create_quote" && data.proposalId) {
+      html = `<div class="action-card-title"><span class="dot ${data.success ? "dot-ok" : "dot-err"}"></span> Proposal Created</div>`;
+      html += `<dl class="action-kv">`;
+      html += `<dt>Proposal #</dt><dd><strong>${data.proposalId}</strong></dd>`;
+      html += `<dt>Client</dt><dd>${data.clientName}</dd>`;
+      html += `<dt>Email</dt><dd>${data.clientEmail}</dd>`;
+      if (data.companyName) html += `<dt>Company</dt><dd>${data.companyName}</dd>`;
+      html += `<dt>Quantity</dt><dd>${data.quantity} user(s)</dd>`;
+      html += `</dl>`;
+      html += `<table class="action-table" style="margin-top:8px;"><tr><th>Product</th><th>Price</th><th>Billing</th></tr>`;
+      (data.products || []).forEach(p => {
+        html += `<tr><td>${p.name}</td><td>$${p.price}</td><td>${p.period}</td></tr>`;
+      });
+      html += `</table>`;
+      // Steps summary
+      html += `<div style="margin-top:8px;font-size:11px;color:#64748b;">`;
+      (data.steps || []).forEach(s => {
+        const icon = s.status === "ok" ? "&#x2705;" : s.status === "warning" ? "&#x26A0;" : "&#x274C;";
+        html += `<div>${icon} ${s.step}</div>`;
+      });
+      html += `</div>`;
+      if (data.proposalUrl) {
+        html += `<a href="${data.proposalUrl}" target="_blank" style="display:inline-block;margin-top:8px;font-size:12px;font-weight:600;color:#1e40af;text-decoration:none;">View in NiftyQuoter &rarr;</a>`;
+      }
+
+    } else {
+      // Generic fallback: pretty-print JSON
+      html += `<pre style="font-size:11px;overflow-x:auto;max-height:200px;">${JSON.stringify(data, null, 2)}</pre>`;
+    }
+
+    div.innerHTML = html;
+    messagesEl.appendChild(div);
+    scrollBottom();
+  }
+
+  function formatActionName(name) {
+    return name.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+  }
+
+  // ── Simple markdown renderer ──
+  function renderMarkdown(text) {
+    return text
+      .replace(/```([\s\S]*?)```/g, '<pre style="background:#f1f5f9;padding:8px 10px;border-radius:6px;font-size:12px;overflow-x:auto;"><code>$1</code></pre>')
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+      .replace(/^- (.+)$/gm, '<li>$1</li>')
+      .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+      .split(/\n\n+/)
+      .map(p => {
+        p = p.trim();
+        if (!p) return '';
+        if (p.startsWith('<h') || p.startsWith('<ul') || p.startsWith('<pre') || p.startsWith('<li')) return p;
+        return '<p>' + p.replace(/\n/g, '<br>') + '</p>';
+      })
+      .join('');
+  }
+</script>
+
+</body>
+</html>

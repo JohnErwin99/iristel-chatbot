@@ -1,0 +1,217 @@
+{
+  "base_url": "https://api.iristelx.com",
+  "auth": "Bearer token in Authorization header",
+  "actions": {
+    "list_plans": {
+      "description": "List available mobile/data plans",
+      "method": "GET",
+      "endpoint": "/plans",
+      "params": {
+        "billingTypes": "prepaid | postpaid | prepaid_ppu",
+        "status": "1 (active) | 0 (inactive)"
+      },
+      "returns": "Array of plans with planCode, planName, planType, billingType, recurringCharge, allotment, features"
+    },
+    "get_plan": {
+      "description": "Get details of a specific plan",
+      "method": "GET",
+      "endpoint": "/plans/{planCode}"
+    },
+    "create_account": {
+      "description": "Create a new customer account",
+      "method": "POST",
+      "endpoint": "/accounts",
+      "body": {
+        "contact.fname": "string (required) — first name",
+        "contact.lname": "string (required) — last name",
+        "contact.address1": "string (required) — street address",
+        "contact.city": "string (required)",
+        "contact.province": "string (required) — 2-char code e.g. ON",
+        "contact.country": "string (required) — 2-char code e.g. CA",
+        "contact.postalCode": "string (required) — A1A1A1",
+        "contact.emailAddress": "string (required)",
+        "language": "EN | FR (default EN)",
+        "name": "string (optional, defaults to fname lname)"
+      },
+      "returns": "accountId, status (NEW), memberSince, contact, provider"
+    },
+    "list_accounts": {
+      "description": "Search and list accounts",
+      "method": "GET",
+      "endpoint": "/accounts",
+      "params": {
+        "query": "search string",
+        "status": "comma-delimited: active,suspended,closed,new",
+        "page": "integer (default 1)",
+        "pageLimit": "integer (default 10)",
+        "sort": "createdOnDesc | updatedOnDesc"
+      },
+      "returns": "Paginated list: total, totalPages, accounts[]"
+    },
+    "get_account": {
+      "description": "Get a specific account by ID",
+      "method": "GET",
+      "endpoint": "/accounts/{accountId}"
+    },
+    "update_account": {
+      "description": "Update account details",
+      "method": "PATCH",
+      "endpoint": "/accounts/{accountId}"
+    },
+    "add_service": {
+      "description": "Add a service (mobile line) to an account",
+      "method": "POST",
+      "endpoint": "/accounts/{accountId}/services",
+      "body": {
+        "planCode": "string (required) — from plans list",
+        "contact.fname": "string (required)",
+        "contact.lname": "string (required)",
+        "contact.address1": "string (required)",
+        "contact.city": "string (required)",
+        "contact.province": "string (required)",
+        "contact.country": "string (required)",
+        "contact.postalCode": "string (required)",
+        "contact.emailAddress": "string (required)",
+        "isShared": "boolean — share usage allotment",
+        "name": "string (optional)"
+      },
+      "returns": "serviceId, mindId, provisioning (planCode, telephoneNumber, SIM, IMEI), billing"
+    },
+    "list_services": {
+      "description": "List all services (global or per account)",
+      "method": "GET",
+      "endpoint": "/accounts/services OR /accounts/{accountId}/services",
+      "params": {
+        "query": "search string",
+        "serviceId": "filter by service ID",
+        "status": "comma-delimited statuses",
+        "planCode": "comma-delimited plan codes",
+        "page": "integer",
+        "pageLimit": "integer"
+      }
+    },
+    "update_service": {
+      "description": "Update a service (activate, suspend, close)",
+      "method": "PATCH",
+      "endpoint": "/accounts/{accountId}/services/{serviceId}",
+      "body": {
+        "status": "ACTIVE | SUSPENDED | CLOSED",
+        "name": "string",
+        "isShared": "boolean"
+      }
+    },
+    "get_usage": {
+      "description": "Get service usage data",
+      "method": "GET",
+      "endpoint": "/accounts/{accountId}/services/{serviceId}/usage",
+      "params": {
+        "type": "GPRS | SMS OUT | SMS INC | MOBILE OUT | MOBILE INC | VOIP | FAX (required)",
+        "fromDate": "YYYY-MM-DD",
+        "toDate": "YYYY-MM-DD",
+        "invoiceId": "invoice number"
+      }
+    },
+    "view_balance": {
+      "description": "Get account balance",
+      "method": "GET",
+      "endpoint": "/billing/{accountId}/balance"
+    },
+    "list_invoices": {
+      "description": "List invoices for an account",
+      "method": "GET",
+      "endpoint": "/billing/{accountId}/invoices",
+      "params": {
+        "status": "0 (open/unpaid) | 2 (closed/paid)",
+        "fromDate": "YYYY-MM-DD",
+        "toDate": "YYYY-MM-DD"
+      }
+    },
+    "add_payment": {
+      "description": "Record a payment on an account",
+      "method": "POST",
+      "endpoint": "/billing/{accountId}/payments",
+      "body": {
+        "paymentMethod": "CASH | CHEQUE | CREDITCARD | DEBITCARD | WIRE | ACH | PAYPAL | VOUCHER",
+        "amount": "number (required)",
+        "currency": "string (required) — ISO4217 e.g. CAD",
+        "reference": "string (optional) — transaction reference",
+        "remark": "string (optional)"
+      }
+    },
+    "update_credit_card": {
+      "description": "Add or update credit card on account",
+      "method": "PATCH",
+      "endpoint": "/billing/{accountId}/credit-card",
+      "body": {
+        "cardType": "VISA | MASTERCARD | AMEX",
+        "number": "string — card number",
+        "holder": "string — cardholder name",
+        "expMonth": "string — e.g. 04",
+        "expYear": "string — e.g. 2025",
+        "CVV": "string — security code"
+      }
+    },
+    "get_cities": {
+      "description": "Get available cities for telephone numbers",
+      "method": "GET",
+      "endpoint": "/telephone-numbers/cities"
+    },
+    "search_numbers": {
+      "description": "Search available telephone numbers",
+      "method": "GET",
+      "endpoint": "/telephone-numbers/catalogue",
+      "params": {
+        "city": "comma-delimited cities",
+        "province": "comma-delimited provinces",
+        "areaCode": "comma-delimited area codes",
+        "exchangeCode": "exchange codes",
+        "country": "country code"
+      }
+    },
+    "reserve_number": {
+      "description": "Reserve telephone numbers",
+      "method": "POST",
+      "endpoint": "/telephone-numbers/reserve",
+      "body": {
+        "telephoneNumbers": "array of number objects"
+      }
+    },
+    "check_portability": {
+      "description": "Check if a number can be ported",
+      "method": "GET",
+      "endpoint": "/porting/check",
+      "params": {
+        "areaCode": "string (required) — first 3 digits",
+        "exchangeCode": "string (required) — next 3 digits"
+      }
+    },
+    "create_port_request": {
+      "description": "Create a number porting request",
+      "method": "POST",
+      "endpoint": "/porting",
+      "body": {
+        "telephoneNumber": "string (required)",
+        "providerName": "string (required) — losing carrier",
+        "providerAccountNumber": "string (required)",
+        "desiredDueDate": "YYYY-MM-DD or YYYY-MM-DD HH:MM",
+        "serviceType": "Wireless | Wireline",
+        "fullName": "string (required)",
+        "streetNumber": "string (required)",
+        "streetName": "string (required)",
+        "city": "string (required)",
+        "province": "string (required)",
+        "postalCode": "string (required)",
+        "serviceId": "string (required) — target service"
+      }
+    },
+    "subscribe_webhook": {
+      "description": "Subscribe to webhook events",
+      "method": "POST",
+      "endpoint": "/webhooks",
+      "body": {
+        "target_url": "string (required) — your callback URL",
+        "event": "account.created | account.updated | payment.created | porting_request.created | porting_request.updated | sim_card.updated | telephone_number.updated | api.offline | api.online | events_listener.offline | events_listener.online"
+      }
+    }
+  }
+}

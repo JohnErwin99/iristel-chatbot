@@ -1,0 +1,12 @@
+{
+  "name": "iristel-custom-quoter",
+  "version": "1.0.0",
+  "description": "Iristel service quoter and AI chatbot",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}

@@ -1,0 +1,386 @@
+{
+  "company": {
+    "name": "Iristel",
+    "description": "Iristel is a Canadian unified communications provider offering cloud calling, hosted PBX, contact center, messaging, cybersecurity, and collaboration solutions for businesses of all sizes.",
+    "website": "https://www.iristel.com"
+  },
+  "product_groups": {
+    "smart_connect": {
+      "name": "Smart Connect Bundles",
+      "description": "All-in-one bundles combining Cloud Calling, Webex collaboration, Call Recording, Virtual Fax, Cybersecurity, and Smarter Messaging into a single per-user monthly price.",
+      "pricing_template_id": 57268,
+      "content_template_id": 49704,
+      "products": [
+        {
+          "id": "sc_essentials_new",
+          "name": "Essentials Smart Connect Bundle New!",
+          "price": 25,
+          "currency": "CAD",
+          "period": "monthly",
+          "unit": "per user",
+          "features": [
+            "Cloud Calling",
+            "Webex Basic",
+            "Standard Call Recording",
+            "Virtual Fax",
+            "Eset Cybersecurity Training (1 year)",
+            "Smarter Messaging Entry"
+          ]
+        },
+        {
+          "id": "sc_pro_new",
+          "name": "Pro Smart Connect Bundle New!",
+          "price": 45,
+          "currency": "CAD",
+          "period": "monthly",
+          "unit": "per user",
+          "features": [
+            "Cloud Calling",
+            "Standard Webex",
+            "Unified Capture Call Recording",
+            "Virtual Fax",
+            "Eset Cybersecurity Protect Advanced (1 year)",
+            "Smarter Messaging Growth"
+          ]
+        },
+        {
+          "id": "sc_premium_new",
+          "name": "Premium Smart Connect Bundle New!",
+          "price": 75,
+          "currency": "CAD",
+          "period": "monthly",
+          "unit": "per user",
+          "features": [
+            "Cloud Calling",
+            "Standard Webex",
+            "Insights & AI Call Recording",
+            "Virtual Fax",
+            "Eset Cybersecurity Protect Advanced + Cybersecurity training (1 year)",
+            "Smarter Messaging Ultimate"
+          ]
+        },
+        {
+          "id": "sc_essentials",
+          "name": "Essentials Smart Connect Bundle",
+          "price": 23,
+          "currency": "CAD",
+          "period": "monthly",
+          "unit": "per user",
+          "features": [
+            "Cloud Calling",
+            "Standard Webex or Teams Calling",
+            "Standard Call Recording",
+            "Virtual Fax ($.05/page)",
+            "Eset Cybersecurity Training (1 year)",
+            "IP Vulnerability Scan (up to 5 public IPs)",
+            "SMS enabled # (Pay Per Use $0.03/msg)"
+          ]
+        },
+        {
+          "id": "sc_pro",
+          "name": "Pro Smart Connect Bundle",
+          "price": 33,
+          "currency": "CAD",
+          "period": "monthly",
+          "unit": "per user",
+          "features": [
+            "Cloud Calling",
+            "Standard Webex or Teams Calling",
+            "Unified Capture Call Recording",
+            "Virtual Fax 50 pages ($.05/page after)",
+            "Eset Cybersecurity Training (1 year)",
+            "SMS enabled # (100 outgoing msgs, $0.03/msg after)",
+            "IP Vulnerability Scan (up to 5 public IPs)"
+          ]
+        },
+        {
+          "id": "sc_premium",
+          "name": "Premium Smart Connect Bundle",
+          "price": 63,
+          "currency": "CAD",
+          "period": "monthly",
+          "unit": "per user",
+          "features": [
+            "Cloud Calling",
+            "Standard Webex or Teams Calling",
+            "Insights & AI Call Recording",
+            "Virtual Fax 200 pages ($.05/page after)",
+            "Eset Cybersecurity Training (1 year)",
+            "SMS enabled # (300 outgoing msgs, $0.03/msg after)",
+            "IP Vulnerability Scan (up to 5 public IPs)"
+          ]
+        }
+      ]
+    },
+    "cloud_contact": {
+      "name": "Cloud Contact Center",
+      "description": "Enterprise-grade cloud contact center solution with voice campaigns, omni-channel support, AI call recording, and custom integrations.",
+      "pricing_template_id": 55883,
+      "content_template_id": 26329,
+      "products": [
+        {
+          "id": "cc_core_voice",
+          "name": "Cloud Contact - Core Voice",
+          "price": 80,
+          "currency": "CAD",
+          "period": "monthly",
+          "unit": "per user",
+          "features": [
+            "Manage all Inbound, Outbound, and Blended campaigns"
+          ]
+        },
+        {
+          "id": "cc_omni_channel",
+          "name": "Cloud Contact - Omni Channel",
+          "price": 110,
+          "currency": "CAD",
+          "period": "monthly",
+          "unit": "per user",
+          "features": [
+            "Manage all interactions across every channel with the Unified Inbox"
+          ]
+        },
+        {
+          "id": "cc_setup_fee",
+          "name": "Cloud Contact Set Up Fee",
+          "price": 4000,
+          "currency": "CAD",
+          "period": "one-time",
+          "unit": "flat",
+          "features": [
+            "Initial setup",
+            "Configuration",
+            "Implementation",
+            "Training (delivered remotely)"
+          ]
+        },
+        {
+          "id": "cc_recording_ai",
+          "name": "Cloud Contact Call Recording AI",
+          "price": 7,
+          "currency": "CAD",
+          "period": "monthly",
+          "unit": "per user",
+          "features": [
+            "AI-powered call recording and analysis"
+          ]
+        },
+        {
+          "id": "cc_custom_dev",
+          "name": "Custom Development (per hour)",
+          "price": 200,
+          "currency": "CAD",
+          "period": "one-time",
+          "unit": "per hour",
+          "features": [
+            "Custom development and integration work"
+          ]
+        }
+      ]
+    },
+    "hosted_pbx": {
+      "name": "Hosted PBX & Webex",
+      "description": "Cloud-hosted PBX phone system with Webex collaboration tiers, call queuing, hunt groups, virtual numbers, and PSTN connectivity.",
+      "pricing_template_id": 49261,
+      "content_template_id": 45027,
+      "products": [
+        {
+          "id": "pbx_unite",
+          "name": "Iristel Unite",
+          "price": 20,
+          "currency": "CAD",
+          "period": "monthly",
+          "unit": "per user",
+          "features": [
+            "Cloud Voice",
+            "Unlimited Canada & US Calling",
+            "DID",
+            "Auto Attendant (5 users+)",
+            "Busy Lamp Fields"
+          ]
+        },
+        {
+          "id": "pbx_webex_basic",
+          "name": "Iristel Unite with Webex Basic",
+          "price": 24,
+          "currency": "CAD",
+          "period": "monthly",
+          "unit": "per user",
+          "features": [
+            "Cloud Voice",
+            "Webex Softphone",
+            "Messaging",
+            "File Sharing"
+          ]
+        },
+        {
+          "id": "pbx_webex_standard",
+          "name": "Iristel Unite with Webex Standard",
+          "price": 29,
+          "currency": "CAD",
+          "period": "monthly",
+          "unit": "per user",
+          "features": [
+            "Cloud Voice",
+            "Webex Softphone",
+            "Messaging",
+            "File Sharing",
+            "Personal Meeting Room (25 capacity)"
+          ]
+        },
+        {
+          "id": "pbx_webex_premium",
+          "name": "Iristel Unite with Webex Premium",
+          "price": 46,
+          "currency": "CAD",
+          "period": "monthly",
+          "unit": "per user",
+          "features": [
+            "Cloud Voice",
+            "Webex Softphone",
+            "Messaging",
+            "File Sharing",
+            "Personal Meeting Room (1000 capacity)"
+          ]
+        },
+        {
+          "id": "pbx_common_area",
+          "name": "Common Area Extension",
+          "price": 10,
+          "currency": "CAD",
+          "period": "monthly",
+          "unit": "per extension",
+          "features": [
+            "Shared extension for common areas"
+          ]
+        },
+        {
+          "id": "pbx_auto_attendant",
+          "name": "Auto-Attendant",
+          "price": 30,
+          "currency": "CAD",
+          "period": "monthly",
+          "unit": "per attendant",
+          "features": [
+            "Automated call routing and greeting"
+          ]
+        },
+        {
+          "id": "pbx_user_activation",
+          "name": "User Activation Fee",
+          "price": 25,
+          "currency": "CAD",
+          "period": "one-time",
+          "unit": "per user",
+          "features": [
+            "One-time user activation fee"
+          ]
+        },
+        {
+          "id": "pbx_aa_activation",
+          "name": "Auto-Attendant Activation Fee",
+          "price": 50,
+          "currency": "CAD",
+          "period": "one-time",
+          "unit": "per attendant",
+          "features": [
+            "One-time auto-attendant activation fee"
+          ]
+        },
+        {
+          "id": "pbx_call_queue_basic",
+          "name": "Call Queue Basic (per agent)",
+          "price": 10,
+          "currency": "CAD",
+          "period": "monthly",
+          "unit": "per agent",
+          "features": [
+            "Simple call distribution and queuing",
+            "Inbound calls distributed based on agent line state"
+          ]
+        },
+        {
+          "id": "pbx_call_queue_premium",
+          "name": "Call Queue Premium (per agent)",
+          "price": 20,
+          "currency": "CAD",
+          "period": "monthly",
+          "unit": "per agent",
+          "features": [
+            "Advanced routing and call management",
+            "ACD states and disposition codes",
+            "Outbound calling support"
+          ]
+        },
+        {
+          "id": "pbx_virtual_fwd",
+          "name": "Virtual Number with Call Forwarding",
+          "price": 10,
+          "currency": "CAD",
+          "period": "monthly",
+          "unit": "per number",
+          "features": [
+            "Virtual DID number with call forwarding"
+          ]
+        },
+        {
+          "id": "pbx_virtual_vm",
+          "name": "Virtual Number with VoiceMail",
+          "price": 15,
+          "currency": "CAD",
+          "period": "monthly",
+          "unit": "per number",
+          "features": [
+            "Virtual DID number with voicemail"
+          ]
+        },
+        {
+          "id": "pbx_hunt_group",
+          "name": "Hunt Group",
+          "price": 5,
+          "currency": "CAD",
+          "period": "monthly",
+          "unit": "per group",
+          "features": [
+            "Hunt group for call distribution"
+          ]
+        },
+        {
+          "id": "pbx_sms_webex",
+          "name": "SMS For Webex",
+          "price": 7,
+          "currency": "CAD",
+          "period": "monthly",
+          "unit": "per user",
+          "features": [
+            "3500 ingoing and outgoing SMS in Canada & US"
+          ]
+        },
+        {
+          "id": "pbx_key_system",
+          "name": "Key System User",
+          "price": 10,
+          "currency": "CAD",
+          "period": "monthly",
+          "unit": "per user",
+          "features": [
+            "Key system user extension"
+          ]
+        },
+        {
+          "id": "pbx_cloud_connect",
+          "name": "Cloud Connect For Webex Calling",
+          "price": 10,
+          "currency": "CAD",
+          "period": "monthly",
+          "unit": "per user",
+          "features": [
+            "Direct, secure PSTN connectivity for Webex Calling",
+            "Powered by Iristel's global voice network",
+            "Simple, scalable, and fully certified"
+          ]
+        }
+      ]
+    }
+  }
+}
