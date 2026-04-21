@@ -56,6 +56,10 @@ IMPORTANT RULES:
 - Never invent products, features, or prices that aren't in your knowledge base below
 - When comparing plans, use a clear format (bullet points or short table)
 - If someone needs something outside your product catalog, acknowledge it and suggest contacting Iristel sales directly
+- NEVER show raw JSON, internal product IDs, API data structures, or technical details to the user
+- NEVER include the [ACTION:...] tag content in your visible text — place it on its own line, separate from your message
+- When confirming a quote or action, use plain language only: product names, prices, and quantities — not code or JSON
+- Your text before and after an action tag should be a friendly human-readable message, never technical output
 - When a visitor seems ready to buy, ask if they'd like you to prepare a quote and collect: company name, contact name, email, and number of users
 - For transactional actions, ALWAYS confirm with the user before executing. Show them what you're about to do.
 
@@ -343,12 +347,22 @@ app.post("/api/chat", async (req, res) => {
     const data = await response.json();
     let reply = data.choices?.[0]?.message?.content || "Sorry, I couldn't generate a response.";
 
+    // Sanitize: strip any raw JSON blocks the LLM might leak
+    function sanitizeReply(text) {
+      return text
+        .replace(/```json[\s\S]*?```/gi, "")
+        .replace(/```[\s\S]*?```/gi, "")
+        .replace(/\{[\s\S]*?"(?:clientName|clientEmail|products|accountId|proposalId)"[\s\S]*?\}/g, "")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
+    }
+
     // Check for action tags in the reply
     const actionMatch = reply.match(/\[ACTION:([^\]]+)\]/);
     if (actionMatch) {
       const actionStr = actionMatch[1];
-      const textBefore = reply.substring(0, actionMatch.index).trim();
-      const textAfter = reply.substring(actionMatch.index + actionMatch[0].length).trim();
+      const textBefore = sanitizeReply(reply.substring(0, actionMatch.index));
+      const textAfter = sanitizeReply(reply.substring(actionMatch.index + actionMatch[0].length));
 
       // Execute the action
       const actionResult = await executeAction(actionStr);
@@ -415,7 +429,7 @@ clientName and clientEmail are required — if missing, return {"error":"missing
               const quoteData = JSON.parse(jsonMatch[0]);
               if (quoteData.error === "missing_info") {
                 // Not enough info yet — let Iris's response stand
-                res.json({ reply });
+                res.json({ reply: sanitizeReply(reply) });
                 return;
               }
               if (quoteData.clientName && quoteData.clientEmail && quoteData.products?.length) {
@@ -439,7 +453,7 @@ clientName and clientEmail are required — if missing, return {"error":"missing
       }
     }
 
-    res.json({ reply });
+    res.json({ reply: sanitizeReply(reply) });
   } catch (err) {
     console.error("Server error:", err);
     res.status(500).json({ error: "Internal server error" });

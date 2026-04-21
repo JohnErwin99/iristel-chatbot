@@ -414,42 +414,41 @@
 
     if (result.error) {
       div.classList.add("iris-action-error");
-      div.innerHTML = '<div class="iris-action-card-title"><span class="iris-dot iris-dot-err"></span> Action Failed</div>' +
-        '<p>' + (result.message || JSON.stringify(result.data)) + '</p>';
+      div.innerHTML = '<div class="iris-action-card-title"><span class="iris-dot iris-dot-err"></span> Something went wrong</div>' +
+        '<p>Sorry, we couldn\'t complete that request. Please try again or contact our sales team.</p>';
       msgArea.appendChild(div);
       scrollBottom();
       return;
     }
 
     var data = result.data;
-    var html = '<div class="iris-action-card-title"><span class="iris-dot iris-dot-ok"></span> ' + formatActionName(name) + '</div>';
+    var html = '';
 
     if (name === "create_quote" && data.proposalId) {
-      html = '<div class="iris-action-card-title"><span class="iris-dot ' + (data.success ? "iris-dot-ok" : "iris-dot-err") + '"></span> Proposal Created</div>';
-      html += '<dl class="iris-action-kv">';
-      html += '<dt>Proposal #</dt><dd><strong>' + data.proposalId + '</strong></dd>';
-      html += '<dt>Client</dt><dd>' + data.clientName + '</dd>';
-      html += '<dt>Email</dt><dd>' + data.clientEmail + '</dd>';
-      if (data.companyName) html += '<dt>Company</dt><dd>' + data.companyName + '</dd>';
-      html += '<dt>Quantity</dt><dd>' + data.quantity + ' user(s)</dd>';
-      html += '</dl>';
-      html += '<table class="iris-action-table" style="margin-top:8px;"><tr><th>Product</th><th>Price</th><th>Billing</th></tr>';
-      (data.products || []).forEach(function(p) {
-        html += '<tr><td>' + p.name + '</td><td>$' + p.price + '</td><td>' + p.period + '</td></tr>';
-      });
-      html += '</table>';
-      html += '<div style="margin-top:8px;font-size:11px;color:#64748b;">';
-      (data.steps || []).forEach(function(s) {
-        var icon = s.status === "ok" ? "&#x2705;" : s.status === "warning" ? "&#x26A0;" : "&#x274C;";
-        html += '<div>' + icon + ' ' + s.step + '</div>';
-      });
-      html += '</div>';
-      if (data.proposalUrl) {
-        html += '<a href="' + data.proposalUrl + '" target="_blank" style="display:inline-block;margin-top:8px;font-size:12px;font-weight:600;color:#1e40af;text-decoration:none;">View in NiftyQuoter &rarr;</a>';
+      var ok = data.success;
+      html = '<div class="iris-action-card-title"><span class="iris-dot ' + (ok ? "iris-dot-ok" : "iris-dot-err") + '"></span> ' + (ok ? "Proposal Sent" : "Proposal Created") + '</div>';
+      html += '<p style="font-size:13px;color:#334155;margin-bottom:8px;">';
+      if (ok) {
+        html += 'Your proposal has been created and emailed to <strong>' + (data.clientEmail || "the client") + '</strong>.';
+      } else {
+        html += 'Your proposal was created but there may have been an issue sending the email. Our team has been notified.';
       }
+      html += '</p>';
+      // Show products in a friendly way — names only, no IDs
+      if (data.products && data.products.length) {
+        html += '<p style="font-size:12px;font-weight:600;color:#475569;margin:0 0 4px;">Included products:</p>';
+        html += '<ul style="font-size:12px;color:#475569;margin:0 0 8px;padding-left:16px;">';
+        data.products.forEach(function(p) {
+          var period = p.period === "one-time" ? " (one-time)" : "/mo";
+          html += '<li>' + p.name + ' — $' + p.price + period + '</li>';
+        });
+        html += '</ul>';
+      }
+      html += '<p style="font-size:12px;color:#64748b;margin:0;">Please check your inbox for the full proposal with pricing details.</p>';
     } else {
-      // Generic fallback
-      html += '<pre style="font-size:11px;overflow-x:auto;max-height:200px;">' + JSON.stringify(data, null, 2) + '</pre>';
+      // Generic friendly fallback — no raw data
+      html = '<div class="iris-action-card-title"><span class="iris-dot iris-dot-ok"></span> Done</div>';
+      html += '<p style="font-size:13px;color:#334155;">Your request has been processed successfully.</p>';
     }
 
     div.innerHTML = html;

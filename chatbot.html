@@ -634,134 +634,41 @@
 
     if (result.error) {
       div.classList.add("action-error");
-      div.innerHTML = `<div class="action-card-title"><span class="dot dot-err"></span> Action Failed</div>` +
-        `<p>${result.message || JSON.stringify(result.data)}</p>`;
+      div.innerHTML = `<div class="action-card-title"><span class="dot dot-err"></span> Something went wrong</div>` +
+        `<p>Sorry, we couldn't complete that request. Please try again or contact our sales team.</p>`;
       messagesEl.appendChild(div);
       scrollBottom();
       return;
     }
 
     const data = result.data;
-    let html = `<div class="action-card-title"><span class="dot dot-ok"></span> ${formatActionName(name)}</div>`;
+    let html = '';
 
-    // Render based on action type
-    if (name === "list_plans" && data.plans) {
-      html += `<table class="action-table"><tr><th>Plan</th><th>Type</th><th>Billing</th><th>$/cycle</th></tr>`;
-      data.plans.slice(0, 20).forEach(p => {
-        html += `<tr><td><strong>${p.planCode}</strong></td><td>${p.planType || "—"}</td><td>${p.billingTypeLabel || p.billingType}</td><td>$${p.recurringCharge}</td></tr>`;
-      });
-      html += `</table>`;
-      if (data.plans.length > 20) html += `<p style="color:#64748b;margin-top:6px;">...and ${data.plans.length - 20} more</p>`;
-
-    } else if (name === "list_accounts" && data.accounts) {
-      html += `<p style="color:#64748b;margin-bottom:6px;">${data.total} accounts found (page ${data.page}/${data.totalPages})</p>`;
-      html += `<table class="action-table"><tr><th>ID</th><th>Name</th><th>Status</th><th>Email</th></tr>`;
-      data.accounts.forEach(a => {
-        html += `<tr><td>${a.accountId}</td><td>${a.name || "—"}</td><td>${a.status}</td><td>${a.contact?.emailAddress || "—"}</td></tr>`;
-      });
-      html += `</table>`;
-
-    } else if (name === "get_account" && data.accountId) {
-      html += `<dl class="action-kv">`;
-      html += `<dt>Account ID</dt><dd>${data.accountId}</dd>`;
-      html += `<dt>Name</dt><dd>${data.name || data.contact?.fname + " " + data.contact?.lname}</dd>`;
-      html += `<dt>Status</dt><dd>${data.status}</dd>`;
-      html += `<dt>Email</dt><dd>${data.contact?.emailAddress || "—"}</dd>`;
-      html += `<dt>City</dt><dd>${data.contact?.city || "—"}, ${data.contact?.province || ""}</dd>`;
-      html += `<dt>Since</dt><dd>${data.memberSince || "—"}</dd>`;
-      html += `</dl>`;
-
-    } else if (name === "create_account" && data.accountId) {
-      html += `<dl class="action-kv">`;
-      html += `<dt>Account ID</dt><dd><strong>${data.accountId}</strong></dd>`;
-      html += `<dt>Status</dt><dd>${data.status}</dd>`;
-      html += `<dt>Name</dt><dd>${data.name}</dd>`;
-      html += `<dt>Provider</dt><dd>${data.provider}</dd>`;
-      html += `</dl>`;
-
-    } else if ((name === "list_services") && (data.services || Array.isArray(data))) {
-      const svcs = data.services || data;
-      html += `<table class="action-table"><tr><th>Service ID</th><th>Plan</th><th>Status</th><th>Phone</th></tr>`;
-      svcs.slice(0, 15).forEach(s => {
-        html += `<tr><td>${s.serviceId}</td><td>${s.provisioning?.planCode || "—"}</td><td>${s.status}</td><td>${s.provisioning?.telephoneNumber || "—"}</td></tr>`;
-      });
-      html += `</table>`;
-
-    } else if (name === "add_service" && data.serviceId) {
-      html += `<dl class="action-kv">`;
-      html += `<dt>Service ID</dt><dd><strong>${data.serviceId}</strong></dd>`;
-      html += `<dt>Plan</dt><dd>${data.provisioning?.planCode || "—"}</dd>`;
-      html += `<dt>Recurring</dt><dd>$${data.billing?.recurringCharge || "—"}/cycle</dd>`;
-      html += `<dt>Phone</dt><dd>${data.provisioning?.telephoneNumber || "Pending"}</dd>`;
-      html += `<dt>SIM</dt><dd>${data.provisioning?.SIM || "Pending"}</dd>`;
-      html += `</dl>`;
-
-    } else if (name === "view_balance") {
-      html += `<dl class="action-kv">`;
-      for (const [k, v] of Object.entries(data)) {
-        html += `<dt>${k}</dt><dd>${typeof v === "number" ? "$" + v.toFixed(2) : v}</dd>`;
-      }
-      html += `</dl>`;
-
-    } else if (name === "list_invoices" && data.invoices) {
-      html += `<table class="action-table"><tr><th>Invoice</th><th>Date</th><th>Amount</th><th>Status</th></tr>`;
-      data.invoices.slice(0, 15).forEach(inv => {
-        html += `<tr><td>${inv.invoiceId || inv.id || "—"}</td><td>${inv.date || inv.createdOn || "—"}</td><td>$${inv.amount || inv.total || "—"}</td><td>${inv.status || "—"}</td></tr>`;
-      });
-      html += `</table>`;
-
-    } else if (name === "search_numbers") {
-      const nums = data.telephoneNumbers || data.numbers || data;
-      if (Array.isArray(nums)) {
-        html += `<p style="color:#64748b;margin-bottom:6px;">${nums.length} numbers found</p>`;
-        html += nums.slice(0, 20).map(n => `<span style="display:inline-block;background:#e2e8f0;padding:2px 8px;border-radius:4px;margin:2px;font-family:monospace;">${typeof n === "string" ? n : n.telephoneNumber || JSON.stringify(n)}</span>`).join("");
-        if (nums.length > 20) html += `<p style="color:#64748b;margin-top:6px;">...and ${nums.length - 20} more</p>`;
+    if (name === "create_quote" && data.proposalId) {
+      const ok = data.success;
+      html = `<div class="action-card-title"><span class="dot ${ok ? "dot-ok" : "dot-err"}"></span> ${ok ? "Proposal Sent" : "Proposal Created"}</div>`;
+      html += `<p style="font-size:13px;color:#334155;margin-bottom:8px;">`;
+      if (ok) {
+        html += `Your proposal has been created and emailed to <strong>${data.clientEmail || "the client"}</strong>.`;
       } else {
-        html += `<pre style="font-size:11px;overflow-x:auto;">${JSON.stringify(data, null, 2)}</pre>`;
+        html += `Your proposal was created but there may have been an issue sending the email. Our team has been notified.`;
       }
-
-    } else if (name === "check_portability") {
-      html += `<dl class="action-kv">`;
-      for (const [k, v] of Object.entries(data)) {
-        html += `<dt>${k}</dt><dd>${v}</dd>`;
+      html += `</p>`;
+      if (data.products && data.products.length) {
+        html += `<p style="font-size:12px;font-weight:600;color:#475569;margin:0 0 4px;">Included products:</p>`;
+        html += `<ul style="font-size:12px;color:#475569;margin:0 0 8px;padding-left:16px;">`;
+        data.products.forEach(p => {
+          const period = p.period === "one-time" ? " (one-time)" : "/mo";
+          html += `<li>${p.name} — $${p.price}${period}</li>`;
+        });
+        html += `</ul>`;
       }
-      html += `</dl>`;
-
-    } else if (name === "add_payment") {
-      html += `<dl class="action-kv">`;
-      for (const [k, v] of Object.entries(data)) {
-        html += `<dt>${k}</dt><dd>${v}</dd>`;
-      }
-      html += `</dl>`;
-
-    } else if (name === "create_quote" && data.proposalId) {
-      html = `<div class="action-card-title"><span class="dot ${data.success ? "dot-ok" : "dot-err"}"></span> Proposal Created</div>`;
-      html += `<dl class="action-kv">`;
-      html += `<dt>Proposal #</dt><dd><strong>${data.proposalId}</strong></dd>`;
-      html += `<dt>Client</dt><dd>${data.clientName}</dd>`;
-      html += `<dt>Email</dt><dd>${data.clientEmail}</dd>`;
-      if (data.companyName) html += `<dt>Company</dt><dd>${data.companyName}</dd>`;
-      html += `<dt>Quantity</dt><dd>${data.quantity} user(s)</dd>`;
-      html += `</dl>`;
-      html += `<table class="action-table" style="margin-top:8px;"><tr><th>Product</th><th>Price</th><th>Billing</th></tr>`;
-      (data.products || []).forEach(p => {
-        html += `<tr><td>${p.name}</td><td>$${p.price}</td><td>${p.period}</td></tr>`;
-      });
-      html += `</table>`;
-      // Steps summary
-      html += `<div style="margin-top:8px;font-size:11px;color:#64748b;">`;
-      (data.steps || []).forEach(s => {
-        const icon = s.status === "ok" ? "&#x2705;" : s.status === "warning" ? "&#x26A0;" : "&#x274C;";
-        html += `<div>${icon} ${s.step}</div>`;
-      });
-      html += `</div>`;
-      if (data.proposalUrl) {
-        html += `<a href="${data.proposalUrl}" target="_blank" style="display:inline-block;margin-top:8px;font-size:12px;font-weight:600;color:#1e40af;text-decoration:none;">View in NiftyQuoter &rarr;</a>`;
-      }
+      html += `<p style="font-size:12px;color:#64748b;margin:0;">Please check your inbox for the full proposal with pricing details.</p>`;
 
     } else {
-      // Generic fallback: pretty-print JSON
-      html += `<pre style="font-size:11px;overflow-x:auto;max-height:200px;">${JSON.stringify(data, null, 2)}</pre>`;
+      // Generic friendly fallback — no raw data
+      html = `<div class="action-card-title"><span class="dot dot-ok"></span> Done</div>`;
+      html += `<p style="font-size:13px;color:#334155;">Your request has been processed successfully.</p>`;
     }
 
     div.innerHTML = html;
