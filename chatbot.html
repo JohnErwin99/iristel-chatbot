@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Iris — Iristel Assistant</title>
+  <title>Iristel Assistant</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: system-ui, -apple-system, sans-serif; background: #f3f4f6; min-height: 100vh; }
@@ -322,13 +322,13 @@
 
 <!-- Floating "Ask AI" button -->
 <button class="fab" id="fab" onclick="toggleChat()">
-  <div class="fab-logo"><img src="avatar.png" alt="Iristel" /></div>
+  <div class="fab-logo"><img src="iristel-logo.svg" alt="Iristel" /></div>
   <span class="fab-label">Ask AI</span>
 </button>
 
 <!-- Greeting tooltip (shows on load, hides on chat open) -->
 <div class="fab-tooltip" id="fabTooltip">
-  Hi! I'm Iris. Need help finding the right plan?
+  Hi! I'm Iristel. Need help finding the right plan?
 </div>
 
 <!-- Chat window (hidden by default) -->
@@ -336,8 +336,8 @@
   <!-- Header -->
   <div class="chat-header">
     <div class="header-text">
-      <h1>Iris</h1>
-      <p><span class="status-dot"></span>Iristel Sales Assistant</p>
+      <h1>Iristel</h1>
+      <p><span class="status-dot"></span>Sales Assistant</p>
     </div>
     <button class="close-btn" onclick="toggleChat()">&times;</button>
   </div>
@@ -358,7 +358,7 @@
 
   <!-- Input -->
   <div class="chat-input">
-    <input type="text" id="userInput" placeholder="Ask Iris anything..." autocomplete="off" />
+    <input type="text" id="userInput" placeholder="Ask Iristel anything..." autocomplete="off" />
     <button class="send-btn" id="sendBtn" onclick="send()">&#x27A4;</button>
   </div>
 </div>
@@ -388,7 +388,7 @@
     if (isHidden) {
       if (!chatOpened) {
         chatOpened = true;
-        addBotMessage("Hi! I'm **Iris**, your Iristel assistant.\n\nI can help you find the right unified communications solution for your business. Ask me about **Smart Connect Bundles**, **Hosted PBX & Webex**, or **Cloud Contact Center** solutions!");
+        addBotMessage("Hi! I'm **Iristel**, your sales assistant.\n\nI can help you find the right unified communications solution for your business. Ask me about **Smart Connect Bundles**, **Hosted PBX & Webex**, or **Cloud Contact Center** solutions!");
       }
       setTimeout(() => inputEl.focus(), 100);
     }

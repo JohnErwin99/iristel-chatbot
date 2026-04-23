@@ -101,20 +101,20 @@
   // ════════════════════════════════════════
   // INJECT HTML
   // ════════════════════════════════════════
-  var avatarUrl = SERVER + "/avatar.png";
+  var logoUrl = SERVER + "/iristel-logo.svg";
   var container = document.createElement("div");
   container.id = "iris-widget";
   container.innerHTML = `
     <button class="iris-fab" id="irisFab">
-      <div class="iris-fab-logo"><img src="${avatarUrl}" alt="Iristel" /></div>
+      <div class="iris-fab-logo"><img src="${logoUrl}" alt="Iristel" /></div>
       <span class="iris-fab-label">Ask AI</span>
     </button>
-    <div class="iris-tooltip" id="irisTooltip">Hi! I'm Iris. Need help finding the right plan?</div>
+    <div class="iris-tooltip" id="irisTooltip">Hi! I'm Iristel. Need help finding the right plan?</div>
     <div class="iris-chat hidden" id="irisChat">
       <div class="iris-header">
         <div>
-          <h1>Iris</h1>
-          <p><span class="iris-status-dot"></span>Iristel Sales Assistant</p>
+          <h1>Iristel</h1>
+          <p><span class="iris-status-dot"></span>Sales Assistant</p>
         </div>
         <button class="iris-close" id="irisClose">&times;</button>
       </div>
@@ -127,7 +127,7 @@
         <button class="iris-qr-btn" id="irisSummarizeBtn">Summarize this page</button>
       </div>
       <div class="iris-input-area">
-        <input type="text" id="irisInput" placeholder="Ask Iris anything..." autocomplete="off" />
+        <input type="text" id="irisInput" placeholder="Ask Iristel anything..." autocomplete="off" />
         <button class="iris-send" id="irisSend">&#x27A4;</button>
       </div>
     </div>
@@ -165,7 +165,7 @@
     if (isHidden) {
       if (!chatOpened) {
         chatOpened = true;
-        addBotMessage("Hi! I'm **Iris**, your Iristel assistant.\n\nI can help you find the right unified communications solution for your business. Ask me about **Smart Connect Bundles**, **Hosted PBX & Webex**, or **Cloud Contact Center** solutions!");
+        addBotMessage("Hi! I'm **Iristel**, your sales assistant.\n\nI can help you find the right unified communications solution for your business. Ask me about **Smart Connect Bundles**, **Hosted PBX & Webex**, or **Cloud Contact Center** solutions!");
       }
       setTimeout(function() { inputEl.focus(); }, 100);
     }
