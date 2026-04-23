@@ -31,7 +31,7 @@
     .iris-fab-logo img{width:100%;height:100%;object-fit:contain;}
     .iris-fab-label{font-size:18px;font-weight:700;color:#fff;letter-spacing:.02em;white-space:nowrap;}
 
-    .iris-tooltip{position:fixed;bottom:88px;left:28px;background:#fff;color:#333;padding:10px 16px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.12);font-size:13px;max-width:220px;z-index:99998;transition:opacity .3s,transform .3s;}
+    .iris-tooltip{position:fixed;bottom:110px;left:28px;background:#fff;color:#333;padding:10px 16px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.12);font-size:13px;max-width:220px;z-index:99998;transition:opacity .3s,transform .3s;}
     .iris-tooltip::after{content:"";position:absolute;bottom:-6px;left:28px;width:12px;height:12px;background:#fff;transform:rotate(45deg);box-shadow:2px 2px 4px rgba(0,0,0,.06);}
     .iris-tooltip.hidden{opacity:0;transform:translateY(8px);pointer-events:none;}
 
