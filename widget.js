@@ -25,24 +25,20 @@
     #iris-widget *{box-sizing:border-box;margin:0;padding:0;}
     #iris-widget{font-family:system-ui,-apple-system,sans-serif;font-size:14px;line-height:1.4;z-index:99999;}
 
-    .iris-fab{position:fixed;bottom:28px;right:28px;width:200px;height:auto;border-radius:16px;border:none;cursor:pointer;background:transparent;padding:4px 0;z-index:99999;transition:transform .2s;filter:drop-shadow(0 4px 12px rgba(0,0,0,.2));}
-    .iris-fab:hover{transform:scale(1.1);}
-    .iris-fab img{width:100%;height:auto;object-fit:contain;}
-    .iris-fab-title{display:block;font-size:14px;font-weight:800;letter-spacing:.12em;color:#1e3a5f;text-align:center;margin-bottom:2px;}
-    .iris-fab::before{content:"";position:absolute;inset:-6px;border-radius:50%;background:rgba(62,140,203,.25);animation:iris-pulse 2s ease-in-out infinite;z-index:-1;}
-    @keyframes iris-pulse{0%,100%{transform:scale(1);opacity:.6;}50%{transform:scale(1.15);opacity:0;}}
-    .iris-fab.open::before{animation:none;opacity:0;}
+    .iris-fab{position:fixed;bottom:28px;right:28px;display:flex;align-items:center;gap:10px;padding:12px 22px 12px 16px;background:#1a1a2e;border:none;border-radius:50px;cursor:pointer;z-index:99999;transition:transform .2s,box-shadow .2s;box-shadow:0 4px 16px rgba(0,0,0,.3);}
+    .iris-fab:hover{transform:scale(1.05);box-shadow:0 6px 24px rgba(0,0,0,.4);}
+    .iris-fab-logo{width:24px;height:24px;flex-shrink:0;}
+    .iris-fab-logo img{width:100%;height:100%;object-fit:contain;}
+    .iris-fab-label{font-size:15px;font-weight:700;color:#fff;letter-spacing:.02em;white-space:nowrap;}
 
-    .iris-tooltip{position:fixed;bottom:236px;right:28px;background:#fff;color:#333;padding:10px 16px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.12);font-size:13px;max-width:220px;z-index:99998;transition:opacity .3s,transform .3s;}
+    .iris-tooltip{position:fixed;bottom:88px;right:28px;background:#fff;color:#333;padding:10px 16px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.12);font-size:13px;max-width:220px;z-index:99998;transition:opacity .3s,transform .3s;}
     .iris-tooltip::after{content:"";position:absolute;bottom:-6px;right:28px;width:12px;height:12px;background:#fff;transform:rotate(45deg);box-shadow:2px 2px 4px rgba(0,0,0,.06);}
     .iris-tooltip.hidden{opacity:0;transform:translateY(8px);pointer-events:none;}
 
-    .iris-chat{position:fixed;bottom:240px;right:28px;width:400px;height:540px;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,.15);display:flex;flex-direction:column;overflow:hidden;z-index:100000;transition:opacity .25s,transform .25s;}
+    .iris-chat{position:fixed;bottom:90px;right:28px;width:400px;height:540px;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,.15);display:flex;flex-direction:column;overflow:hidden;z-index:100000;transition:opacity .25s,transform .25s;}
     .iris-chat.hidden{opacity:0;transform:translateY(20px) scale(.95);pointer-events:none;}
 
     .iris-header{background:linear-gradient(135deg,#1e3a5f 0%,#3e8ccb 100%);color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;}
-    .iris-header-avatar{width:36px;height:36px;flex-shrink:0;}
-    .iris-header-avatar img{width:100%;height:100%;object-fit:contain;}
     .iris-header h1{font-size:15px;font-weight:600;color:#fff;}
     .iris-header p{font-size:11px;opacity:.85;margin-top:1px;color:#fff;}
     .iris-status-dot{width:7px;height:7px;border-radius:50%;background:#34d399;display:inline-block;margin-right:3px;vertical-align:middle;}
@@ -94,8 +90,8 @@
 
     @media(max-width:480px){
       .iris-chat{bottom:0;right:0;width:100%;height:100%;border-radius:0;}
-      .iris-fab{bottom:16px;right:16px;width:60px;height:60px;}
-      .iris-tooltip{bottom:88px;right:16px;}
+      .iris-fab{bottom:16px;right:16px;}
+      .iris-tooltip{bottom:72px;right:16px;}
     }
   `;
   var style = document.createElement("style");
@@ -110,13 +106,12 @@
   container.id = "iris-widget";
   container.innerHTML = `
     <button class="iris-fab" id="irisFab">
-      <span class="iris-fab-title">IRISTEL</span>
-      <img src="${avatarUrl}" alt="Iris" />
+      <div class="iris-fab-logo"><img src="${avatarUrl}" alt="Iristel" /></div>
+      <span class="iris-fab-label">Ask AI</span>
     </button>
     <div class="iris-tooltip" id="irisTooltip">Hi! I'm Iris. Need help finding the right plan?</div>
     <div class="iris-chat hidden" id="irisChat">
       <div class="iris-header">
-        <div class="iris-header-avatar"><img src="${avatarUrl}" alt="Iris" /></div>
         <div>
           <h1>Iris</h1>
           <p><span class="iris-status-dot"></span>Iristel Sales Assistant</p>
@@ -456,8 +451,5 @@
     scrollBottom();
   }
 
-  function formatActionName(name) {
-    return name.replace(/_/g, " ").replace(/\b\w/g, function(c) { return c.toUpperCase(); });
-  }
 
 })();
