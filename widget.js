@@ -25,11 +25,11 @@
     #iris-widget *{box-sizing:border-box;margin:0;padding:0;}
     #iris-widget{font-family:system-ui,-apple-system,sans-serif;font-size:14px;line-height:1.4;z-index:99999;}
 
-    .iris-fab{position:fixed;bottom:28px;right:28px;display:flex;align-items:center;gap:10px;padding:12px 22px 12px 16px;background:#1a1a2e;border:none;border-radius:50px;cursor:pointer;z-index:99999;transition:transform .2s,box-shadow .2s;box-shadow:0 4px 16px rgba(0,0,0,.3);}
+    .iris-fab{position:fixed;bottom:28px;right:28px;display:flex;align-items:center;gap:10px;padding:16px 30px 16px 22px;background:#1a1a2e;border:none;border-radius:50px;cursor:pointer;z-index:99999;transition:transform .2s,box-shadow .2s;box-shadow:0 4px 16px rgba(0,0,0,.3);}
     .iris-fab:hover{transform:scale(1.05);box-shadow:0 6px 24px rgba(0,0,0,.4);}
-    .iris-fab-logo{width:24px;height:24px;flex-shrink:0;}
+    .iris-fab-logo{width:32px;height:32px;flex-shrink:0;}
     .iris-fab-logo img{width:100%;height:100%;object-fit:contain;}
-    .iris-fab-label{font-size:15px;font-weight:700;color:#fff;letter-spacing:.02em;white-space:nowrap;}
+    .iris-fab-label{font-size:18px;font-weight:700;color:#fff;letter-spacing:.02em;white-space:nowrap;}
 
     .iris-tooltip{position:fixed;bottom:88px;right:28px;background:#fff;color:#333;padding:10px 16px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.12);font-size:13px;max-width:220px;z-index:99998;transition:opacity .3s,transform .3s;}
     .iris-tooltip::after{content:"";position:absolute;bottom:-6px;right:28px;width:12px;height:12px;background:#fff;transform:rotate(45deg);box-shadow:2px 2px 4px rgba(0,0,0,.06);}
